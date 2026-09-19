@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Personal Insights & Observations — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Personal Footprint Insights</h1>
+        <p class="page-subtitle">Algorithmic observations and practical reduction strategies derived from your activity calculations.</p>
+    </div>
+    {% if calc %}
+        <div>
+            <a href="{{ url_for('individual_calculator') }}" class="btn btn-secondary btn-sm">Update Inputs &rarr;</a>
+        </div>
+    {% endif %}
+</div>
+
+{% if not calc %}
+    <div class="panel" style="text-align: center; padding: 3rem 1.5rem;">
+        <h2 style="font-size: 1.25rem; color: var(--color-forest); margin-bottom: 0.5rem;">No calculation available to analyze.</h2>
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">Complete your daily activity input to receive personalized digital efficiency insights.</p>
+        <a href="{{ url_for('individual_calculator') }}" class="btn btn-primary btn-sm">Calculate Footprint &rarr;</a>
+    </div>
+{% else %}
+    <div style="max-width: 800px;">
+        <div style="margin-bottom: 1.5rem;">
+            {% for item in insights %}
+                <div class="insight-card {% if item.type == 'warning' %}severity-high{% elif item.type == 'info' %}severity-info{% endif %}">
+                    <div class="insight-title">{{ item.title }}</div>
+                    <div class="insight-body">{{ item.text }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Actionable Digital Sustainability Tips</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; font-size: 0.875rem;">
+                <div>
+                    <div style="font-weight: 600; color: var(--color-forest); margin-bottom: 0.25rem;">Optimize Display Power</div>
+                    <p style="color: var(--text-muted);">
+                        Reducing screen brightness from 100% to 70% can reduce display energy consumption by up to 20% on laptops. Set screen timeout to 5 minutes of inactivity.
+                    </p>
+                </div>
+
+                <div>
+                    <div style="font-weight: 600; color: var(--color-forest); margin-bottom: 0.25rem;">Resolution & Streaming</div>
+                    <p style="color: var(--text-muted);">
+                        Streaming in 1080p consumes significantly less transmission and CDN power than 4K streaming while offering near-identical clarity on standard screens.
+                    </p>
+                </div>
+
+                <div>
+                    <div style="font-weight: 600; color: var(--color-forest); margin-bottom: 0.25rem;">Refine AI Prompts</div>
+                    <p style="color: var(--text-muted);">
+                        Provide clear instructions and constraints in single prompts rather than submitting multiple exploratory questions to conserve inference compute.
+                    </p>
+                </div>
+
+                <div>
+                    <div style="font-weight: 600; color: var(--color-forest); margin-bottom: 0.25rem;">Digital Clutter Abatement</div>
+                    <p style="color: var(--text-muted);">
+                        Unsubscribe from automated newsletters and delete unused cloud backups to reduce persistent data center storage electricity demand.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

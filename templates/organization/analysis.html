@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Exploratory Data Analysis & Statistics — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Exploratory Data Analysis & Statistical Modeling</h1>
+        <p class="page-subtitle">Descriptive statistics, empirical distributions, correlations, and experimental regression analysis.</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{{ url_for('organization_export', export_type='calculated', analysis_id=analysis.id) }}" class="btn btn-secondary btn-sm">
+            Export Calculated CSV
+        </a>
+        <a href="{{ url_for('organization_what_if') }}" class="btn btn-primary btn-sm">
+            What-If Simulator &rarr;
+        </a>
+    </div>
+</div>
+
+<!-- Cleaning Audit Banner -->
+{% set cr = summary.get('cleaning_report', {}) %}
+{% if cr %}
+    <div class="panel" style="background-color: var(--bg-subtle); border-left: 4px solid var(--color-sage); margin-bottom: 1.75rem;">
+        <div class="panel-header" style="border-bottom: 1px solid var(--border-color);">
+            <h3 class="panel-title" style="font-size: 1.05rem;">Transparent Data Cleaning & Audit Log</h3>
+            <span class="badge-factor badge-research">AUDIT COMPLETED</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.85rem;">
+            <div>
+                <span style="color: var(--text-muted);">Uploaded Rows:</span>
+                <strong class="mono-cell" style="margin-left: 4px;">{{ cr.get('initial_rows', 0) }}</strong>
+            </div>
+            <div>
+                <span style="color: var(--text-muted);">Duplicates Removed:</span>
+                <strong class="mono-cell" style="margin-left: 4px;">{{ cr.get('duplicates_removed', 0) }}</strong>
+            </div>
+            <div>
+                <span style="color: var(--text-muted);">Invalid Negatives Corrected:</span>
+                <strong class="mono-cell" style="margin-left: 4px;">{{ cr.get('negative_values_corrected', {})|length }} fields</strong>
+            </div>
+            <div>
+                <span style="color: var(--text-muted);">Cleaned Dataset Rows:</span>
+                <strong class="mono-cell" style="margin-left: 4px; color: var(--color-forest);">{{ cr.get('final_rows', 0) }}</strong>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Descriptive Statistics (Pandas DataFrame describe()) -->
+{% if eda and eda.get('summary_statistics') %}
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Descriptive Statistics (Pandas describe())</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Calculated over {{ analysis.records_count }} records</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-custom" style="font-size: 0.825rem;">
+                <thead>
+                    <tr>
+                        <th>Metric / Variable</th>
+                        <th>Mean</th>
+                        <th>Std Dev</th>
+                        <th>Min</th>
+                        <th>25% (Q1)</th>
+                        <th>Median (50%)</th>
+                        <th>75% (Q3)</th>
+                        <th>IQR</th>
+                        <th>Max</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for col, stats in eda.get('summary_statistics', {}).items() %}
+                        <tr>
+                            <td><strong><code>{{ col }}</code></strong></td>
+                            <td class="mono-cell">{{ "%.3f"|format(stats.mean) }}</td>
+                            <td class="mono-cell">{{ "%.3f"|format(stats.std) }}</td>
+                            <td class="mono-cell">{{ "%.2f"|format(stats.min) }}</td>
+                            <td class="mono-cell">{{ "%.2f"|format(stats.q25) }}</td>
+                            <td class="mono-cell" style="font-weight: 600; color: var(--color-forest);">{{ "%.2f"|format(stats.median) }}</td>
+                            <td class="mono-cell">{{ "%.2f"|format(stats.q75) }}</td>
+                            <td class="mono-cell">{{ "%.2f"|format(stats.iqr) }}</td>
+                            <td class="mono-cell">{{ "%.2f"|format(stats.max) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Statistical Visualizations (Distribution & Correlation) -->
+{% set charts = summary.get('charts', {}) %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+    <!-- Distribution Chart -->
+    <div class="panel" style="margin-bottom: 0;">
+        <div class="panel-header">
+            <h3 class="panel-title">Emissions Distribution (KDE)</h3>
+            <span class="badge-factor badge-research">SEABORN HISTPLOT</span>
+        </div>
+        {% if charts.get('distribution') %}
+            <img src="{{ url_for('static', filename='generated_charts/' + charts.get('distribution')) }}" alt="Emissions Distribution" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+        {% else %}
+            <div style="text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 0.85rem;">
+                Insufficient observations for density estimation.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Correlation Heatmap -->
+    <div class="panel" style="margin-bottom: 0;">
+        <div class="panel-header">
+            <h3 class="panel-title">Activity Correlation Matrix</h3>
+            <span class="badge-factor badge-research">SEABORN HEATMAP</span>
+        </div>
+        {% if charts.get('correlation') %}
+            <img src="{{ url_for('static', filename='generated_charts/' + charts.get('correlation')) }}" alt="Correlation Heatmap" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+        {% else %}
+            <div style="text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 0.85rem;">
+                Insufficient observations or variation for meaningful correlation analysis.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Inter-Departmental Distribution Boxplot -->
+{% if charts.get('dept_comparison') %}
+    <div class="panel">
+        <div class="panel-header">
+            <h3 class="panel-title">Inter-Departmental Emission Variance (Boxplot)</h3>
+            <span class="badge-factor badge-research">SEABORN BOXPLOT</span>
+        </div>
+        <img src="{{ url_for('static', filename='generated_charts/' + charts.get('dept_comparison')) }}" alt="Department Comparison Boxplot" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+    </div>
+{% endif %}
+
+<!-- Optional Experimental Machine Learning -->
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title">Experimental Statistical Modeling (scikit-learn)</h2>
+        <span class="badge-factor badge-assumption">EXPERIMENTAL ONLY</span>
+    </div>
+
+    {% if ml and ml.get('available') %}
+        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; margin-bottom: 1.25rem;">
+            <div>
+                <div class="metric-label">Model Evaluation Metrics</div>
+                <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <span>Coefficient of Determination (\(R^2\)):</span>
+                        <strong class="mono-cell" style="color: var(--color-forest);">{{ ml.r2_score }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <span>Mean Absolute Error (MAE):</span>
+                        <strong class="mono-cell">{{ ml.mae }} kg CO₂e</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                        <span>Dataset Split:</span>
+                        <span>{{ ml.train_samples }} train / {{ ml.test_samples }} test (80/20)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="metric-label">Regression Coefficients (\(\beta_i\))</div>
+                <div class="table-responsive">
+                    <table class="table-custom" style="font-size: 0.825rem;">
+                        <thead>
+                            <tr>
+                                <th>Feature Activity Variable</th>
+                                <th>Fitted Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feat, coef in ml.get('coefficients', {}).items() %}
+                                <tr>
+                                    <td><code>{{ feat }}</code></td>
+                                    <td class="mono-cell">{{ "%.6f"|format(coef) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="background-color: var(--bg-subtle); border-left: 3px solid var(--color-sage); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--text-muted);">
+            <strong>Academic Integrity Note:</strong> {{ ml.disclaimer }}
+        </div>
+    {% else %}
+        <div style="background-color: var(--bg-subtle); padding: 1.25rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-muted);">
+            <strong>Model Training Skipped:</strong> {{ ml.get('reason', 'Dataset size is insufficient for meaningful regression modeling.') }}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

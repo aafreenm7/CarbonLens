@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Analysis Report — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Digital Sustainability Executive Report</h1>
+        <p class="page-subtitle">Formal documentation of organization digital energy consumption, emissions profile, and reduction potential.</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{{ url_for('organization_export', export_type='pdf', analysis_id=analysis.id) }}" class="btn btn-primary btn-sm">
+            &darr; Download Official PDF Report
+        </a>
+    </div>
+</div>
+
+<!-- Report Summary Document Card -->
+<div class="panel" style="padding: 2rem;">
+    <!-- Report Header -->
+    <div style="border-bottom: 2px solid var(--color-forest); padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-sage); text-transform: uppercase; letter-spacing: 0.05em;">
+                CarbonLens Analysis Document
+            </div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--color-forest);">
+                {{ session.get('org_name', 'Organization') }}
+            </h2>
+        </div>
+        <div style="font-size: 0.825rem; color: var(--text-muted); text-align: right;">
+            <div>Dataset: <strong>{{ analysis.dataset.filename }}</strong></div>
+            <div>Date of Analysis: <strong>{{ analysis.created_at.strftime('%d %B %Y') }}</strong></div>
+            <div>Monitored Records: <strong class="mono-cell">{{ analysis.records_count }}</strong></div>
+        </div>
+    </div>
+
+    <!-- Executive Summary Section -->
+    <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-forest); margin-bottom: 0.75rem;">1. Executive Summary</h3>
+        <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+            During the monitored telemetry period, the organization generated an estimated daily electrical demand of 
+            <strong class="mono-cell">{{ "%.2f"|format(summary.get('total_energy_kwh', 0.0)) }} kWh</strong>, 
+            resulting in an estimated digital greenhouse gas footprint of 
+            <strong class="mono-cell">{{ "%.2f"|format(summary.get('total_co2e_kg', 0.0)) }} kg CO₂e / day</strong> 
+            (<strong class="mono-cell">{{ "%.1f"|format(summary.get('monthly_co2e_kg', 0.0)) }} kg CO₂e</strong> projected across a 30-day baseline). 
+            The primary driver of digital emissions is <strong>{{ summary.get('highest_impact_activity', 'Unknown') }}</strong>.
+        </p>
+
+        <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 0;">
+            <div class="metric-card" style="padding: 1rem;">
+                <div class="metric-label">Daily Direct Energy</div>
+                <div class="metric-value" style="font-size: 1.4rem;">{{ "%.2f"|format(summary.get('total_energy_kwh', 0.0)) }}<span class="metric-unit">kWh</span></div>
+            </div>
+            <div class="metric-card" style="padding: 1rem;">
+                <div class="metric-label">Daily Total Emissions</div>
+                <div class="metric-value" style="font-size: 1.4rem;">{{ "%.2f"|format(summary.get('total_co2e_kg', 0.0)) }}<span class="metric-unit">kg</span></div>
+            </div>
+            <div class="metric-card" style="padding: 1rem;">
+                <div class="metric-label">Monthly Projection</div>
+                <div class="metric-value" style="font-size: 1.4rem;">{{ "%.1f"|format(summary.get('monthly_co2e_kg', 0.0)) }}<span class="metric-unit">kg</span></div>
+            </div>
+            <div class="metric-card" style="padding: 1rem;">
+                <div class="metric-label">Yearly Projection</div>
+                <div class="metric-value" style="font-size: 1.4rem;">{{ "%.1f"|format(summary.get('yearly_co2e_kg', 0.0)) }}<span class="metric-unit">kg</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Breakdown Table -->
+    <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-forest); margin-bottom: 0.75rem;">2. Activity-Level Carbon & Energy Matrix</h3>
+        <div class="table-responsive">
+            <table class="table-custom" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th>Activity Name</th>
+                        <th>Direct Energy (kWh)</th>
+                        <th>Emissions (kg CO₂e)</th>
+                        <th>Percentage Contribution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, act in summary.get('activities', {}).items() %}
+                        <tr>
+                            <td><strong>{{ name }}</strong></td>
+                            <td class="mono-cell">{{ "%.3f"|format(act.get('energy_kwh', 0.0)) }} kWh</td>
+                            <td class="mono-cell" style="font-weight: 600; color: var(--color-forest);">{{ "%.3f"|format(act.get('co2e_kg', 0.0)) }} kg</td>
+                            <td class="mono-cell">{{ "%.1f"|format(act.get('percentage', 0.0)) }}%</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Department Breakdown Table -->
+    <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-forest); margin-bottom: 0.75rem;">3. Departmental Contribution</h3>
+        <div class="table-responsive">
+            <table class="table-custom" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Employees</th>
+                        <th>Direct Energy (kWh)</th>
+                        <th>Daily Emissions (kg)</th>
+                        <th>Share (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in summary.get('departments', []) %}
+                        <tr>
+                            <td><strong>{{ d.department }}</strong></td>
+                            <td class="mono-cell">{{ d.records }}</td>
+                            <td class="mono-cell">{{ "%.3f"|format(d.energy_kwh) }} kWh</td>
+                            <td class="mono-cell">{{ "%.2f"|format(d.co2e_kg) }} kg</td>
+                            <td class="mono-cell">{{ "%.1f"|format(d.percentage) }}%</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Key Insights -->
+    <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-forest); margin-bottom: 0.75rem;">4. Key Data-Driven Observations</h3>
+        {% for ins in insights[:3] %}
+            <div class="insight-card" style="margin-bottom: 0.75rem;">
+                <div class="insight-title">{{ ins.title }}</div>
+                <div class="insight-body">{{ ins.observation }}</div>
+                <div class="insight-action">&rarr; Recommended Strategy: {{ ins.recommendation }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Methodology & Limitations -->
+    <div style="background-color: var(--bg-subtle); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
+        <strong>Academic Notice & Methodology Boundaries:</strong>
+        Emissions are calculated using the 0.710 kg CO₂e/kWh Indian national grid factor (CEA FY24–25).
+        Laptop power draw is modelled at 50 W, smartphone at 2 W, video streaming at 36 g CO₂e/hr (IEA 2020), email at 0.3 g CO₂e/message, and AI queries at 0.31 Wh/query (Oviedo et al., Joule 2026).
+        Calculations represent analytical estimates based on activity logs, not direct physical electricity meters.
+    </div>
+</div>
+
+<!-- CSV Downloads Section -->
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title">Data Exports (Pandas Generated CSV)</h2>
+    </div>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ url_for('organization_export', export_type='cleaned', analysis_id=analysis.id) }}" class="btn btn-secondary btn-sm">
+            &darr; Export Cleaned Dataset CSV
+        </a>
+        <a href="{{ url_for('organization_export', export_type='calculated', analysis_id=analysis.id) }}" class="btn btn-secondary btn-sm">
+            &darr; Export Calculated Footprint CSV
+        </a>
+        <a href="{{ url_for('organization_export', export_type='activities', analysis_id=analysis.id) }}" class="btn btn-secondary btn-sm">
+            &darr; Export Activity Summary CSV
+        </a>
+        <a href="{{ url_for('organization_export', export_type='departments', analysis_id=analysis.id) }}" class="btn btn-secondary btn-sm">
+            &darr; Export Department Summary CSV
+        </a>
+    </div>
+</div>
+{% endblock %}

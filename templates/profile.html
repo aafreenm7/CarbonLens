@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Account Profile — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">User Account Profile</h1>
+        <p class="page-subtitle">Authenticated credentials and access authorization scope.</p>
+    </div>
+</div>
+
+<div style="max-width: 650px;">
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Credentials & Scope</h2>
+            <span class="user-badge" style="background-color: var(--color-forest); color: #fff;">{{ user.account_type }}</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 140px 1fr; gap: 0.85rem; font-size: 0.9rem; margin-bottom: 1.5rem;">
+            <div style="color: var(--text-muted); font-weight: 600;">Full Name:</div>
+            <div style="color: var(--text-main);">{{ user.name }}</div>
+
+            <div style="color: var(--text-muted); font-weight: 600;">Email Address:</div>
+            <div style="color: var(--text-main); font-family: var(--font-mono);">{{ user.email }}</div>
+
+            <div style="color: var(--text-muted); font-weight: 600;">Account Type:</div>
+            <div style="color: var(--text-main);">{{ user.account_type }}</div>
+
+            <div style="color: var(--text-muted); font-weight: 600;">Registered On:</div>
+            <div style="color: var(--text-main);">{{ user.created_at.strftime('%d %B %Y at %H:%M UTC') }}</div>
+        </div>
+
+        {% if user.is_organization() and user.organization %}
+            <div class="panel-header" style="margin-top: 1.5rem;">
+                <h3 class="panel-title" style="font-size: 1.05rem;">Organization Profile</h3>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 140px 1fr; gap: 0.85rem; font-size: 0.9rem;">
+                <div style="color: var(--text-muted); font-weight: 600;">Organization:</div>
+                <div style="color: var(--text-main); font-weight: 600;">{{ user.organization.name }}</div>
+
+                <div style="color: var(--text-muted); font-weight: 600;">Administrator:</div>
+                <div style="color: var(--text-main);">{{ user.organization.admin_name }}</div>
+
+                <div style="color: var(--text-muted); font-weight: 600;">Industry:</div>
+                <div style="color: var(--text-main);">{{ user.organization.industry }}</div>
+
+                <div style="color: var(--text-muted); font-weight: 600;">Company Size:</div>
+                <div style="color: var(--text-main);">{{ user.organization.organization_size }} employees</div>
+            </div>
+        {% endif %}
+
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between;">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-sm">Sign Out</a>
+            {% if user.is_organization() %}
+                <a href="{{ url_for('organization_dashboard') }}" class="btn btn-primary btn-sm">Go to Dashboard &rarr;</a>
+            {% else %}
+                <a href="{{ url_for('individual_dashboard') }}" class="btn btn-primary btn-sm">Go to Dashboard &rarr;</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

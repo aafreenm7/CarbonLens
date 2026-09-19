@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Data Quality Audit & Preview — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Data Quality Audit & Schema Mapping</h1>
+        <p class="page-subtitle">Preview raw records, verify automated column mapping, and inspect data quality metrics before cleaning.</p>
+    </div>
+    <div style="font-size: 0.85rem; color: var(--text-muted); text-align: right;">
+        <div>File: <strong style="color: var(--color-forest);">{{ dataset.filename }}</strong></div>
+        <div>Rows: <strong class="mono-cell">{{ dataset.row_count }}</strong> &nbsp;|&nbsp; Columns: <strong class="mono-cell">{{ preview_cols|length }}</strong></div>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('organization_data_quality', dataset_id=dataset.id) }}">
+    <!-- Data Quality Audit KPI Summary -->
+    <div class="card-grid">
+        <div class="metric-card">
+            <div class="metric-label">Schema Validation</div>
+            <div class="metric-value" style="font-size: 1.35rem;">
+                {% if is_valid %}
+                    <span style="color: var(--color-forest);">&check; Valid</span>
+                {% else %}
+                    <span style="color: var(--status-danger);">&cross; Missing Fields</span>
+                {% endif %}
+            </div>
+            <div class="metric-meta">
+                {% if is_valid %}
+                    All 5 required activity fields detected
+                {% else %}
+                    Missing: {{ missing_cols|join(', ') }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Missing Cell Values</div>
+            <div class="metric-value">{{ missing_values_count }}<span class="metric-unit">cells</span></div>
+            <div class="metric-meta">Handled via non-destructive median imputation</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Duplicate Rows</div>
+            <div class="metric-value">{{ duplicates_count }}<span class="metric-unit">rows</span></div>
+            <div class="metric-meta">Identified for automated deduplication</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Anomaly Inspection</div>
+            <div class="metric-value" style="font-size: 1.35rem;">1.5 &times; IQR</div>
+            <div class="metric-meta">Statistical outliers flagged without silent deletion</div>
+        </div>
+    </div>
+
+    <!-- Schema Mapping Confirmation -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Column Schema Mapping</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Confirm automated mapping or adjust manually</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            {% for std_col in required_cols + ['department', 'employee_id', 'meeting_hours'] %}
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label class="form-label" style="display: flex; justify-content: space-between;">
+                        <span><code>{{ std_col }}</code></span>
+                        {% if std_col in required_cols %}
+                            <span style="color: var(--status-danger); font-size: 0.75rem;">Required</span>
+                        {% else %}
+                            <span style="color: var(--text-light); font-size: 0.75rem;">Optional</span>
+                        {% endif %}
+                    </label>
+                    <select name="map_{{ std_col }}" class="form-select" style="font-size: 0.85rem;">
+                        <option value="">-- Do Not Map --</option>
+                        {% for col in preview_cols %}
+                            <option value="{{ col }}" {% if detected_mapping.get(std_col) == col %}selected{% endif %}>
+                                {{ col }} {% if detected_mapping.get(std_col) == col %}(Auto-matched){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Raw Data Preview Table -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Raw Dataset Preview (First 15 Records)</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Loaded via Pandas DataFrame</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-custom" style="font-size: 0.8rem;">
+                <thead>
+                    <tr>
+                        {% for col in preview_cols %}
+                            <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in preview_rows %}
+                        <tr>
+                            {% for col in preview_cols %}
+                                <td class="mono-cell">{{ row[col] if row[col] is not none and row[col] == row[col] else 'NaN' }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <a href="{{ url_for('organization_upload') }}" class="btn btn-secondary btn-sm">&larr; Upload Different File</a>
+            <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.4rem;">
+                Clean & Analyse Dataset &rarr;
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}

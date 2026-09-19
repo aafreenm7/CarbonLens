@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Your Digital Carbon Footprint — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Your Digital Carbon Footprint</h1>
+        <p class="page-subtitle">Estimated daily electricity consumption and greenhouse gas emissions from your personal digital activities.</p>
+    </div>
+    {% if calc %}
+        <div>
+            <a href="{{ url_for('individual_calculator') }}" class="btn btn-primary btn-sm">
+                Recalculate Footprint &rarr;
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% if not calc %}
+    <!-- Empty State -->
+    <div class="panel" style="text-align: center; padding: 3.5rem 1.5rem;">
+        <div style="font-size: 2rem; color: var(--color-sage); margin-bottom: 0.75rem;">&bull; &bull; &bull;</div>
+        <h2 style="font-size: 1.35rem; color: var(--color-forest); margin-bottom: 0.5rem;">
+            You haven't calculated your footprint yet.
+        </h2>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 1.5rem auto; font-size: 0.9rem;">
+            Log your average daily computer hours, smartphone screen time, video streaming, emails, and generative AI queries to view your verified impact.
+        </p>
+        <a href="{{ url_for('individual_calculator') }}" class="btn btn-primary">
+            Calculate My Footprint &rarr;
+        </a>
+    </div>
+{% else %}
+    <!-- Active KPI Metric Cards -->
+    <div class="card-grid">
+        <div class="metric-card">
+            <div class="metric-label">Estimated Today</div>
+            <div class="metric-value">{{ "%.1f"|format(calc.daily_co2e) }}<span class="metric-unit">g CO₂e</span></div>
+            <div class="metric-meta">{{ "%.3f"|format(calc.daily_co2e / 1000.0) }} kg CO₂e / day</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">This Month (30d Projection)</div>
+            <div class="metric-value">{{ "%.2f"|format(calc.monthly_co2e) }}<span class="metric-unit">kg CO₂e</span></div>
+            <div class="metric-meta">Estimated 30-day baseline</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">This Year (365d Projection)</div>
+            <div class="metric-value">{{ "%.1f"|format(calc.yearly_co2e) }}<span class="metric-unit">kg CO₂e</span></div>
+            <div class="metric-meta">Annualized digital impact</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Direct Daily Energy</div>
+            <div class="metric-value">{{ "%.3f"|format(calc.daily_energy) }}<span class="metric-unit">kWh</span></div>
+            <div class="metric-meta">Device & AI compute power</div>
+        </div>
+    </div>
+
+    <!-- Detailed Activity Breakdown -->
+    {% set breakdown = calc.get_breakdown().get('breakdown', {}) %}
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Activity Footprint Breakdown</h2>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Calculated on {{ calc.created_at.strftime('%d %b %Y, %H:%M UTC') }}
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Activity</th>
+                        <th>Logged Daily Input</th>
+                        <th>Direct Energy (kWh)</th>
+                        <th>Daily Emissions (g CO₂e)</th>
+                        <th>Contribution Share</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Laptop Usage</strong></td>
+                        <td class="mono-cell">{{ calc.laptop_hours }} hrs/day</td>
+                        <td class="mono-cell">{{ breakdown.get('laptop', {}).get('energy_kwh', 0.0) }} kWh</td>
+                        <td class="mono-cell">{{ breakdown.get('laptop', {}).get('co2e_g', 0.0) }} g</td>
+                        <td>{{ breakdown.get('laptop', {}).get('percentage', 0.0) }}%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Smartphone Usage</strong></td>
+                        <td class="mono-cell">{{ calc.smartphone_hours }} hrs/day</td>
+                        <td class="mono-cell">{{ breakdown.get('smartphone', {}).get('energy_kwh', 0.0) }} kWh</td>
+                        <td class="mono-cell">{{ breakdown.get('smartphone', {}).get('co2e_g', 0.0) }} g</td>
+                        <td>{{ breakdown.get('smartphone', {}).get('percentage', 0.0) }}%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Video Streaming</strong></td>
+                        <td class="mono-cell">{{ calc.streaming_hours }} hrs/day</td>
+                        <td class="mono-cell" style="color: var(--text-light);">&mdash; (Lifecycle)</td>
+                        <td class="mono-cell">{{ breakdown.get('streaming', {}).get('co2e_g', 0.0) }} g</td>
+                        <td>{{ breakdown.get('streaming', {}).get('percentage', 0.0) }}%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Emails Sent</strong></td>
+                        <td class="mono-cell">{{ calc.emails|int }} emails/day</td>
+                        <td class="mono-cell" style="color: var(--text-light);">&mdash; (Lifecycle)</td>
+                        <td class="mono-cell">{{ breakdown.get('email', {}).get('co2e_g', 0.0) }} g</td>
+                        <td>{{ breakdown.get('email', {}).get('percentage', 0.0) }}%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AI Queries</strong></td>
+                        <td class="mono-cell">{{ calc.ai_queries|int }} queries/day</td>
+                        <td class="mono-cell">{{ breakdown.get('ai', {}).get('energy_kwh', 0.0) }} kWh</td>
+                        <td class="mono-cell">{{ breakdown.get('ai', {}).get('co2e_g', 0.0) }} g</td>
+                        <td>{{ breakdown.get('ai', {}).get('percentage', 0.0) }}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="font-size: 0.825rem; color: var(--text-muted);">
+                Primary footprint driver: <strong style="color: var(--color-forest);">{{ calc.get_breakdown().get('highest_impact_activity', 'None') }}</strong>
+            </div>
+            <div>
+                <a href="{{ url_for('individual_insights') }}" class="btn btn-secondary btn-sm">Explore Insights &rarr;</a>
+                <a href="{{ url_for('individual_history') }}" class="btn btn-secondary btn-sm">View History</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Visual Analytics Section -->
+    {% if charts %}
+    <div style="margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-forest); margin-bottom: 0.25rem;">
+                    Personal Visual Analytics
+                </h2>
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
+                    Data-driven visualization charts for Calculation #{{ calc.id }} ({{ calc.created_at.strftime('%d %b %Y, %H:%M UTC') }}).
+                </p>
+            </div>
+            {% if request.args.get('calc_id') %}
+            <div>
+                <a href="{{ url_for('individual_dashboard') }}" class="btn btn-secondary btn-sm">
+                    &larr; View Latest Calculation
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <!-- Chart 1: CO2e by Activity -->
+            {% if charts.get('activity_co2') %}
+            <div class="panel" style="margin-bottom: 0;">
+                <div class="panel-header">
+                    <h3 class="panel-title" style="font-size: 1rem;">Daily Emissions by Activity</h3>
+                    <span class="badge badge-success">g CO₂e</span>
+                </div>
+                <div style="text-align: center; padding: 0.5rem 0;">
+                    <img src="{{ url_for('static', filename='generated_charts/' + charts.get('activity_co2')) }}" 
+                         alt="Personal Emissions by Activity" 
+                         style="width: 100%; height: auto; border-radius: var(--radius-sm);" />
+                </div>
+                <p style="font-size: 0.775rem; color: var(--text-light); text-align: center; margin-top: 0.5rem;">
+                    Granular breakdown across all logged digital activities based on verified emission factors.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Chart 2: Direct Operational Electricity -->
+            {% if charts.get('energy_activity') %}
+            <div class="panel" style="margin-bottom: 0;">
+                <div class="panel-header">
+                    <h3 class="panel-title" style="font-size: 1rem;">Direct Operational Electricity Demand</h3>
+                    <span class="badge badge-success">kWh</span>
+                </div>
+                <div style="text-align: center; padding: 0.5rem 0;">
+                    <img src="{{ url_for('static', filename='generated_charts/' + charts.get('energy_activity')) }}" 
+                         alt="Personal Electricity Demand" 
+                         style="width: 100%; height: auto; border-radius: var(--radius-sm);" />
+                </div>
+                <p style="font-size: 0.775rem; color: var(--text-light); text-align: center; margin-top: 0.5rem;">
+                    * Hardware operational draw (laptop, smartphone, AI compute). Excludes lifecycle streaming/email.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Chart 3: Percentage Contribution Share -->
+            {% if charts.get('contribution') %}
+            <div class="panel" style="margin-bottom: 0;">
+                <div class="panel-header">
+                    <h3 class="panel-title" style="font-size: 1rem;">Activity Contribution Share</h3>
+                    <span class="badge badge-success">% Percentage</span>
+                </div>
+                <div style="text-align: center; padding: 0.5rem 0;">
+                    <img src="{{ url_for('static', filename='generated_charts/' + charts.get('contribution')) }}" 
+                         alt="Personal Contribution Share" 
+                         style="width: 100%; height: auto; border-radius: var(--radius-sm);" />
+                </div>
+                <p style="font-size: 0.775rem; color: var(--text-light); text-align: center; margin-top: 0.5rem;">
+                    Proportional share of each digital activity relative to total estimated daily carbon footprint.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Chart 4: Footprint Summary Horizons -->
+            {% if charts.get('summary') %}
+            <div class="panel" style="margin-bottom: 0;">
+                <div class="panel-header">
+                    <h3 class="panel-title" style="font-size: 1rem;">Footprint Summary: Time Horizons</h3>
+                    <span class="badge badge-success">kg CO₂e</span>
+                </div>
+                <div style="text-align: center; padding: 0.5rem 0;">
+                    <img src="{{ url_for('static', filename='generated_charts/' + charts.get('summary')) }}" 
+                         alt="Personal Footprint Summary" 
+                         style="width: 100%; height: auto; border-radius: var(--radius-sm);" />
+                </div>
+                <p style="font-size: 0.775rem; color: var(--text-light); text-align: center; margin-top: 0.5rem;">
+                    Comparative projection of daily baseline against 30-day monthly and 365-day annualized impact.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

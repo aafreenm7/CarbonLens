@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found (404) — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width: 600px; margin: 3rem auto; text-align: center; padding: 3rem 1.5rem;">
+    <div style="font-size: 3rem; font-weight: 800; color: var(--color-forest); font-family: var(--font-mono); margin-bottom: 0.5rem;">404</div>
+    <h1 style="font-size: 1.35rem; color: var(--text-main); margin-bottom: 0.75rem;">Page Not Found</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        The analytical resource or endpoint you requested does not exist or may have been relocated.
+    </p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm">
+        &larr; Return to Home
+    </a>
+</div>
+{% endblock %}

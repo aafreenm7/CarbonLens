@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Departmental Carbon Allocation — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Departmental Carbon & Energy Allocation</h1>
+        <p class="page-subtitle">Comparative emissions, per-capita intensity, and workload efficiency across business divisions.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('organization_export', export_type='departments', analysis_id=analysis.id) }}" class="btn btn-secondary btn-sm">
+            Export Departments CSV
+        </a>
+    </div>
+</div>
+
+{% set charts = summary.get('charts', {}) %}
+{% if charts.get('department_co2') %}
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Comparative Department Emissions (kg CO₂e)</h2>
+            <span class="badge-factor badge-research">PYTHON / SEABORN</span>
+        </div>
+        <img src="{{ url_for('static', filename='generated_charts/' + charts.get('department_co2')) }}" alt="Department Emissions Chart" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+    </div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title">Detailed Departmental Performance Matrix</h2>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Aggregated via Pandas groupby()</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Department Name</th>
+                    <th>Headcount</th>
+                    <th>Total Direct Energy (kWh)</th>
+                    <th>Daily Total CO₂e (kg)</th>
+                    <th>Mean per Employee (kg)</th>
+                    <th>Monthly Projected (kg)</th>
+                    <th>Organization Share</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in departments %}
+                    <tr>
+                        <td><strong>{{ d.department }}</strong></td>
+                        <td class="mono-cell">{{ d.records }}</td>
+                        <td class="mono-cell">{{ "%.3f"|format(d.energy_kwh) }} kWh</td>
+                        <td class="mono-cell" style="font-weight: 600; color: var(--color-forest);">{{ "%.2f"|format(d.co2e_kg) }} kg</td>
+                        <td class="mono-cell">{{ "%.3f"|format(d.mean_co2e_kg) }} kg</td>
+                        <td class="mono-cell">{{ "%.1f"|format(d.co2e_kg * 30.0) }} kg</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="flex: 1; height: 6px; background-color: var(--bg-subtle); border-radius: 3px; overflow: hidden;">
+                                    <div style="width: {{ d.percentage }}%; height: 100%; background-color: var(--color-sage);"></div>
+                                </div>
+                                <span class="mono-cell" style="font-size: 0.8rem;">{{ "%.1f"|format(d.percentage) }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

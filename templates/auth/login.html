@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — CarbonLens Analytics Platform{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 2rem auto;">
+    <div style="display: grid; grid-template-columns: 1fr 1.15fr; gap: 2rem; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-card); overflow: hidden;">
+        
+        <!-- Left Column: Academic Philosophy & Pipeline Diagram -->
+        <div style="background-color: var(--color-forest); color: #FFFFFF; padding: 2.5rem 2rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; color: var(--color-mint); margin-bottom: 0.5rem; text-transform: uppercase;">
+                    Environmental Data Science
+                </div>
+                <h2 style="font-size: 1.65rem; font-weight: 700; line-height: 1.25; margin-bottom: 1rem; color: #FFFFFF;">
+                    Understand the carbon cost of digital activity.
+                </h2>
+                <p style="font-size: 0.875rem; color: #D3E0D6; line-height: 1.6; margin-bottom: 2rem;">
+                    CarbonLens evaluates empirical digital activity data using verified grid carbon intensities and life-cycle methodologies.
+                </p>
+
+                <!-- Process Diagram -->
+                <div style="background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-sm); padding: 1.25rem; font-family: var(--font-mono); font-size: 0.825rem; text-align: center; color: #E8F5E9; line-height: 1.8;">
+                    <div>DIGITAL ACTIVITY</div>
+                    <div style="color: var(--color-mint);">&darr;</div>
+                    <div>DATA VALIDATION & CLEANING</div>
+                    <div style="color: var(--color-mint);">&darr;</div>
+                    <div>PYTHON CARBON CALCULATION</div>
+                    <div style="color: var(--color-mint);">&darr;</div>
+                    <div>CO₂e ANALYTICS & INSIGHTS</div>
+                </div>
+            </div>
+
+            <div style="font-size: 0.75rem; color: #95BBA0; margin-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1rem;">
+                B.Tech Computer Engineering &mdash; Academic Project
+            </div>
+        </div>
+
+        <!-- Right Column: Login Form -->
+        <div style="padding: 2.5rem 2rem;">
+            <div style="margin-bottom: 1.75rem;">
+                <h1 style="font-size: 1.4rem; font-weight: 700; color: var(--color-forest); margin-bottom: 0.25rem;">
+                    Sign In to CarbonLens
+                </h1>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">
+                    Access your individual calculator or organization dashboard.
+                </p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ email or '' }}" required autofocus placeholder="name@example.com">
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+                        <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
+                        <a href="{{ url_for('auth.forgot_password') }}" style="font-size: 0.775rem;">Forgot password?</a>
+                    </div>
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Enter password">
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.65rem;">
+                        Sign In &rarr;
+                    </button>
+                </div>
+            </form>
+
+            <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.85rem; text-align: center; color: var(--text-muted);">
+                Don't have an account yet?
+                <a href="{{ url_for('auth.register') }}" style="font-weight: 600; color: var(--color-forest);">Create an Account</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

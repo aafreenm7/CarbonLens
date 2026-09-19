@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Personal Footprint Calculator — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Personal Digital Activity Calculator</h1>
+        <p class="page-subtitle">Submit your typical daily digital activity. The Python carbon engine converts your usage into verified energy and carbon estimates.</p>
+    </div>
+</div>
+
+<div style="max-width: 720px; margin: 0 auto;">
+    <div class="panel">
+        <form method="POST" action="{{ url_for('individual_calculator') }}">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                <!-- Laptop -->
+                <div class="form-group">
+                    <label for="laptop_hours" class="form-label">Laptop Usage</label>
+                    <div style="position: relative;">
+                        <input type="number" step="0.1" min="0" max="24" id="laptop_hours" name="laptop_hours" class="form-control" value="{{ form_data.get('laptop_hours', '6.0') }}" required>
+                    </div>
+                    <div class="form-text">Active operational hours per day (50 W power draw).</div>
+                </div>
+
+                <!-- Smartphone -->
+                <div class="form-group">
+                    <label for="smartphone_hours" class="form-label">Smartphone Screen Time</label>
+                    <input type="number" step="0.1" min="0" max="24" id="smartphone_hours" name="smartphone_hours" class="form-control" value="{{ form_data.get('smartphone_hours', '3.0') }}" required>
+                    <div class="form-text">Active screen-on hours per day (2 W power draw).</div>
+                </div>
+
+                <!-- Video Streaming -->
+                <div class="form-group">
+                    <label for="streaming_hours" class="form-label">Video Streaming</label>
+                    <input type="number" step="0.1" min="0" max="24" id="streaming_hours" name="streaming_hours" class="form-control" value="{{ form_data.get('streaming_hours', '1.5') }}" required>
+                    <div class="form-text">HD video streaming hours/day (36 g CO₂e/hr, IEA 2020).</div>
+                </div>
+
+                <!-- Emails -->
+                <div class="form-group">
+                    <label for="emails" class="form-label">Emails Sent</label>
+                    <input type="number" step="1" min="0" max="1000" id="emails" name="emails" class="form-control" value="{{ form_data.get('emails', '25') }}" required>
+                    <div class="form-text">Average messages sent per day (0.3 g CO₂e/msg).</div>
+                </div>
+
+                <!-- AI Queries -->
+                <div class="form-group">
+                    <label for="ai_queries" class="form-label">Generative AI Queries</label>
+                    <input type="number" step="1" min="0" max="500" id="ai_queries" name="ai_queries" class="form-control" value="{{ form_data.get('ai_queries', '15') }}" required>
+                    <div class="form-text">Conversational LLM prompts per day (0.31 Wh/query).</div>
+                </div>
+
+                <!-- Online Meetings -->
+                <div class="form-group">
+                    <label for="meeting_hours" class="form-label">Online Video Meetings</label>
+                    <input type="number" step="0.5" min="0" max="60" id="meeting_hours" name="meeting_hours" class="form-control" value="{{ form_data.get('meeting_hours', '5.0') }}">
+                    <div class="form-text">Hours/week. Retained for workload tracking.</div>
+                </div>
+            </div>
+
+            <!-- Double-counting & Scientific notice -->
+            <div style="background-color: var(--bg-subtle); border-left: 3px solid var(--color-sage); padding: 0.85rem; border-radius: var(--radius-sm); margin: 1.5rem 0; font-size: 0.8rem; color: var(--text-muted);">
+                <strong>Scientific Boundary Safeguard:</strong> Laptop operational electricity is not added to streaming hours to prevent double-counting display consumption, adhering strictly to IEA lifecycle standards.
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <a href="{{ url_for('individual_dashboard') }}" class="btn btn-secondary btn-sm">&larr; Back to Dashboard</a>
+                <button type="submit" class="btn btn-primary">
+                    Calculate Footprint &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

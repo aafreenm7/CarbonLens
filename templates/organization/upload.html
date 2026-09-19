@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Activity Dataset — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Upload Digital Activity Dataset</h1>
+        <p class="page-subtitle">Upload organizational digital activity telemetry in CSV or Excel format to initiate validation, data cleaning, and carbon calculations.</p>
+    </div>
+    <div>
+        <form method="POST" action="{{ url_for('organization_upload') }}">
+            <input type="hidden" name="action" value="load_demo">
+            <button type="submit" class="btn btn-secondary btn-sm">
+                &boxplus; Load Academic Demo Dataset
+            </button>
+        </form>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
+    <!-- Upload Form & Dropzone -->
+    <div>
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Select or Drag Dataset File</h2>
+                <span style="font-size: 0.775rem; color: var(--text-muted);">Max: 16 MB</span>
+            </div>
+
+            <form method="POST" action="{{ url_for('organization_upload') }}" enctype="multipart/form-data">
+                <div id="upload-dropzone" class="upload-dropzone">
+                    <div class="upload-icon">&darr;</div>
+                    <div style="font-weight: 600; color: var(--color-forest); font-size: 1rem; margin-bottom: 0.25rem;">
+                        Drag and drop your CSV or Excel file here
+                    </div>
+                    <div style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Supported formats: <code>.csv</code>, <code>.xlsx</code>, <code>.xls</code>
+                    </div>
+
+                    <input type="file" id="file-input" name="file" accept=".csv, .xlsx, .xls" style="display: none;">
+                    
+                    <button type="button" class="btn btn-secondary btn-sm">
+                        Browse Files
+                    </button>
+
+                    <div id="file-selected-name" style="display: none; margin-top: 1rem; font-weight: 600; color: var(--color-sage); font-family: var(--font-mono); font-size: 0.85rem;"></div>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary">
+                        Proceed to Data Quality Audit &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Recent Uploads History -->
+        {% if recent_datasets %}
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Recently Uploaded Datasets</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-custom" style="font-size: 0.825rem;">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Rows</th>
+                                <th>Uploaded At</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ds in recent_datasets %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ ds.filename }}</strong>
+                                        {% if ds.is_demo %}
+                                            <span class="badge-factor badge-assumption" style="margin-left: 4px;">DEMO</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="mono-cell">{{ ds.row_count }}</td>
+                                    <td>{{ ds.uploaded_at.strftime('%d %b, %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('organization_data_quality', dataset_id=ds.id) }}" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.75rem;">
+                                            Audit &rarr;
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Column Schema & Alias Guide -->
+    <div>
+        <div class="panel">
+            <div class="panel-header">
+                <h3 class="panel-title">Expected Data Schema & Aliases</h3>
+            </div>
+            <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1rem;">
+                CarbonLens automatically detects and maps column headers matching standard names or their sensible synonyms.
+            </p>
+
+            <div class="table-responsive">
+                <table class="table-custom" style="font-size: 0.8rem;">
+                    <thead>
+                        <tr>
+                            <th>Standard Field</th>
+                            <th>Units / Type</th>
+                            <th>Supported Aliases</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>employee_id</code></td>
+                            <td>String / ID</td>
+                            <td>emp_id, id, user_id, staff_id</td>
+                        </tr>
+                        <tr>
+                            <td><code>department</code></td>
+                            <td>Categorical</td>
+                            <td>dept, division, team, unit</td>
+                        </tr>
+                        <tr>
+                            <td><code>laptop_hours</code>*</td>
+                            <td>Hours / Day</td>
+                            <td>laptop_usage, laptop_time, laptop</td>
+                        </tr>
+                        <tr>
+                            <td><code>smartphone_hours</code>*</td>
+                            <td>Hours / Day</td>
+                            <td>phone_hours, mobile_hours, phone</td>
+                        </tr>
+                        <tr>
+                            <td><code>streaming_hours</code>*</td>
+                            <td>Hours / Day</td>
+                            <td>video_hours, stream_time, streaming</td>
+                        </tr>
+                        <tr>
+                            <td><code>emails</code>*</td>
+                            <td>Count / Day</td>
+                            <td>email_count, num_emails, messages</td>
+                        </tr>
+                        <tr>
+                            <td><code>ai_queries</code>*</td>
+                            <td>Count / Day</td>
+                            <td>ai_prompts, prompt_count, queries</td>
+                        </tr>
+                        <tr>
+                            <td><code>meeting_hours</code></td>
+                            <td>Hours / Week</td>
+                            <td>online_meetings, zoom_hours, calls</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.75rem;">
+                * Required activity metric columns for full carbon footprint calculation.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

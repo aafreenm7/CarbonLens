@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Organization Sustainability Overview — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Organization Digital Sustainability Overview</h1>
+        <p class="page-subtitle">Aggregate digital energy demand and greenhouse gas emissions across organizational departments.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('organization_upload') }}" class="btn btn-primary btn-sm">+ Upload Dataset</a>
+    </div>
+</div>
+
+{% if not analysis %}
+    <!-- Empty State -->
+    <div class="panel" style="text-align: center; padding: 3.5rem 1.5rem;">
+        <div style="font-size: 2.2rem; color: var(--color-sage); margin-bottom: 0.75rem;">&bull; &bull; &bull;</div>
+        <h2 style="font-size: 1.35rem; color: var(--color-forest); margin-bottom: 0.5rem;">
+            No activity dataset has been analysed yet.
+        </h2>
+        <p style="color: var(--text-muted); max-width: 520px; margin: 0 auto 1.75rem auto; font-size: 0.9rem;">
+            Upload your organization's digital activity records in CSV or Excel format, or load our pre-configured academic demo dataset to instantly inspect data cleaning, EDA, and carbon analytics.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <a href="{{ url_for('organization_upload') }}" class="btn btn-primary">
+                Upload Activity Data &rarr;
+            </a>
+            <form method="POST" action="{{ url_for('organization_upload') }}" style="display: inline;">
+                <input type="hidden" name="action" value="load_demo">
+                <button type="submit" class="btn btn-secondary">
+                    Load Academic Demo Dataset
+                </button>
+            </form>
+        </div>
+    </div>
+{% else %}
+    <!-- Active Overview KPIs -->
+    <div class="card-grid">
+        <div class="metric-card">
+            <div class="metric-label">Estimated Monthly CO₂e</div>
+            <div class="metric-value">{{ "%.1f"|format(summary.get('monthly_co2e_kg', 0.0)) }}<span class="metric-unit">kg</span></div>
+            <div class="metric-meta">{{ "%.2f"|format(summary.get('total_co2e_kg', 0.0)) }} kg CO₂e daily baseline</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Estimated Monthly Energy</div>
+            <div class="metric-value">{{ "%.1f"|format(summary.get('total_energy_kwh', 0.0) * 30.0) }}<span class="metric-unit">kWh</span></div>
+            <div class="metric-meta">{{ "%.2f"|format(summary.get('total_energy_kwh', 0.0)) }} kWh daily operational draw</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Monitored Records</div>
+            <div class="metric-value">{{ summary.get('record_count', 0) }}<span class="metric-unit">employees</span></div>
+            <div class="metric-meta">{{ "%.2f"|format(summary.get('per_employee_co2e_kg', 0.0)) }} kg/employee/day</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Highest Impact Driver</div>
+            <div class="metric-value" style="font-size: 1.35rem; text-transform: capitalize;">
+                {{ summary.get('highest_impact_activity', 'None') }}
+            </div>
+            <div class="metric-meta">Largest activity emission share</div>
+        </div>
+    </div>
+
+    <!-- Analytical Visualizations Grid -->
+    {% set charts = summary.get('charts', {}) %}
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+        <div class="panel" style="margin-bottom: 0;">
+            <div class="panel-header">
+                <h3 class="panel-title">Emissions by Activity</h3>
+                <span class="badge-factor badge-research">PYTHON / SEABORN</span>
+            </div>
+            {% if charts.get('activity_co2') %}
+                <img src="{{ url_for('static', filename='generated_charts/' + charts.get('activity_co2')) }}" alt="Emissions by Activity" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Chart rendering pending...</div>
+            {% endif %}
+        </div>
+
+        <div class="panel" style="margin-bottom: 0;">
+            <div class="panel-header">
+                <h3 class="panel-title">Emissions by Department</h3>
+                <span class="badge-factor badge-research">PYTHON / SEABORN</span>
+            </div>
+            {% if charts.get('department_co2') %}
+                <img src="{{ url_for('static', filename='generated_charts/' + charts.get('department_co2')) }}" alt="Emissions by Department" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Chart rendering pending...</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Department Summary Table & Quick Actions -->
+    <div class="panel">
+        <div class="panel-header">
+            <h2 class="panel-title">Department Contribution Ranking</h2>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ url_for('organization_analysis') }}" class="btn btn-secondary btn-sm">Full EDA & Stats &rarr;</a>
+                <a href="{{ url_for('organization_what_if') }}" class="btn btn-secondary btn-sm">What-If Simulator &rarr;</a>
+                <a href="{{ url_for('organization_reports') }}" class="btn btn-primary btn-sm">Generate Reports</a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Monitored Headcount</th>
+                        <th>Direct Daily Energy (kWh)</th>
+                        <th>Daily Emissions (kg CO₂e)</th>
+                        <th>Mean per Employee (kg)</th>
+                        <th>Percentage Share</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in summary.get('departments', []) %}
+                        <tr>
+                            <td><strong>{{ d.department }}</strong></td>
+                            <td class="mono-cell">{{ d.records }}</td>
+                            <td class="mono-cell">{{ "%.3f"|format(d.energy_kwh) }} kWh</td>
+                            <td class="mono-cell" style="font-weight: 600; color: var(--color-forest);">{{ "%.2f"|format(d.co2e_kg) }} kg</td>
+                            <td class="mono-cell">{{ "%.3f"|format(d.mean_co2e_kg) }} kg</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div style="flex: 1; height: 6px; background-color: var(--bg-subtle); border-radius: 3px; overflow: hidden;">
+                                        <div style="width: {{ d.percentage }}%; height: 100%; background-color: var(--color-sage);"></div>
+                                    </div>
+                                    <span class="mono-cell" style="font-size: 0.8rem;">{{ "%.1f"|format(d.percentage) }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

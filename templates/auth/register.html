@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Create an Account — CarbonLens{% endblock %}
+
+{% block content %}
+<div style="max-width: 620px; margin: 1.5rem auto;">
+    <div class="panel">
+        <div style="margin-bottom: 1.5rem; text-align: center;">
+            <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--color-forest); margin-bottom: 0.25rem;">
+                Create Your CarbonLens Account
+            </h1>
+            <p style="font-size: 0.875rem; color: var(--text-muted);">
+                Select your account type to access the appropriate data analytics suite.
+            </p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+            <!-- Account Type Switcher -->
+            <div class="form-group">
+                <label for="account_type_select" class="form-label">Account Purpose</label>
+                <select id="account_type_select" name="account_type" class="form-select" style="font-weight: 600; color: var(--color-forest);">
+                    <option value="INDIVIDUAL" {% if account_type == 'INDIVIDUAL' %}selected{% endif %}>Individual (Personal Carbon Calculator)</option>
+                    <option value="ORGANIZATION" {% if account_type == 'ORGANIZATION' %}selected{% endif %}>Organization (Company Dataset Analytics)</option>
+                </select>
+                <div class="form-text">Role determines dashboard navigation and permissions.</div>
+            </div>
+
+            <!-- Organization Specific Fields -->
+            <div id="organization_specific_fields" style="display: {% if account_type == 'ORGANIZATION' %}block{% else %}none{% endif %}; background-color: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; border: 1px solid var(--border-color);">
+                <div class="form-group">
+                    <label for="org_name" class="form-label">Organization Name</label>
+                    <input type="text" id="org_name" name="org_name" class="form-control" placeholder="e.g. Acme Tech Solutions">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="industry" class="form-label">Industry</label>
+                        <select id="industry" name="industry" class="form-select">
+                            <option value="IT / Software">IT / Software</option>
+                            <option value="Education">Education</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Manufacturing">Manufacturing</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="organization_size" class="form-label">Organization Size</label>
+                        <select id="organization_size" name="organization_size" class="form-select">
+                            <option value="1-50">1-50 employees</option>
+                            <option value="51-200" selected>51-200 employees</option>
+                            <option value="201-1000">201-1000 employees</option>
+                            <option value="1000+">1000+ employees</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Common Fields -->
+            <div class="form-group">
+                <label for="name" class="form-label">Full Name / Administrator Name</label>
+                <input type="text" id="name" name="name" class="form-control" required placeholder="Enter full name">
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address (Work / Personal)</label>
+                <input type="email" id="email" name="email" class="form-control" required placeholder="name@domain.com">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" minlength="8" required placeholder="Min 8 characters">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" minlength="8" required placeholder="Re-enter password">
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.65rem;">
+                    Complete Registration &rarr;
+                </button>
+            </div>
+        </form>
+
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+            Already have an account?
+            <a href="{{ url_for('auth.login') }}" style="font-weight: 600; color: var(--color-forest);">Sign In</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

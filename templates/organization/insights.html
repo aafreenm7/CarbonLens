@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Data-Driven Insights & Reduction Strategies — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Algorithmic Insights & Reduction Strategies</h1>
+        <p class="page-subtitle">Contextual observations programmatically derived from the analyzed activity records.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('organization_what_if') }}" class="btn btn-primary btn-sm">
+            Model What-If Scenarios &rarr;
+        </a>
+    </div>
+</div>
+
+<div style="max-width: 850px;">
+    {% if not insights %}
+        <div class="panel" style="text-align: center; padding: 3rem;">
+            <p style="color: var(--text-muted);">No observations generated for the current baseline.</p>
+        </div>
+    {% else %}
+        {% for ins in insights %}
+            <div class="insight-card severity-{{ ins.severity }}">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+                    <div class="insight-title">{{ ins.title }}</div>
+                    <span class="badge-factor badge-assumption" style="font-size: 0.7rem;">{{ ins.category }}</span>
+                </div>
+                <div class="insight-body">{{ ins.observation }}</div>
+                <div class="insight-action">
+                    &rarr; Recommended Action: {{ ins.recommendation }}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="panel" style="margin-top: 2rem;">
+        <div class="panel-header">
+            <h2 class="panel-title">Corporate Sustainability Alignment</h2>
+            <span class="badge-factor badge-research">UN SDG FRAMEWORK</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+            CarbonLens supports continuous digital monitoring and structured decision-making aligned with international sustainability commitments:
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; font-size: 0.825rem;">
+            <div style="background-color: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <strong style="color: var(--color-forest);">SDG 12</strong><br>
+                Responsible Consumption & Production: Minimizing redundant compute load and optimizing hardware power configurations.
+            </div>
+            <div style="background-color: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <strong style="color: var(--color-forest);">SDG 13</strong><br>
+                Climate Action: Establishing transparent digital Scope 2 (electricity) and Scope 3 (cloud & transmission) reporting baselines.
+            </div>
+            <div style="background-color: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <strong style="color: var(--color-forest);">SDG 9</strong><br>
+                Industry, Innovation & Infrastructure: Adopting efficient algorithms, lightweight network protocols, and green cloud hosting.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

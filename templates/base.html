@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CarbonLens — Digital Carbon Footprint Analytics{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar-custom">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="{{ url_for('index') }}" class="nav-brand">
+                    <span>CarbonLens</span>
+                    <span class="brand-tag">Academic Platform</span>
+                </a>
+
+                <ul class="nav-links nav-main">
+                    {% if session.get('user_id') %}
+                        {% if session.get('account_type') == 'ORGANIZATION' %}
+                            <li><a href="{{ url_for('organization_dashboard') }}" class="{{ 'active' if request.endpoint == 'organization_dashboard' else '' }}">Dashboard</a></li>
+                            <li><a href="{{ url_for('organization_upload') }}" class="{{ 'active' if request.endpoint == 'organization_upload' else '' }}">Upload</a></li>
+                            <li><a href="{{ url_for('organization_analysis') }}" class="{{ 'active' if request.endpoint == 'organization_analysis' else '' }}">Analysis</a></li>
+                            <li><a href="{{ url_for('organization_departments') }}" class="{{ 'active' if request.endpoint == 'organization_departments' else '' }}">Departments</a></li>
+                            <li><a href="{{ url_for('organization_insights') }}" class="{{ 'active' if request.endpoint == 'organization_insights' else '' }}">Insights</a></li>
+                            <li><a href="{{ url_for('organization_what_if') }}" class="{{ 'active' if request.endpoint == 'organization_what_if' else '' }}">What-If</a></li>
+                            <li><a href="{{ url_for('organization_reports') }}" class="{{ 'active' if request.endpoint == 'organization_reports' else '' }}">Reports</a></li>
+                        {% elif session.get('account_type') == 'INDIVIDUAL' %}
+                            <li><a href="{{ url_for('individual_dashboard') }}" class="{{ 'active' if request.endpoint == 'individual_dashboard' else '' }}">Dashboard</a></li>
+                            <li><a href="{{ url_for('individual_calculator') }}" class="{{ 'active' if request.endpoint == 'individual_calculator' else '' }}">Calculator</a></li>
+                            <li><a href="{{ url_for('individual_history') }}" class="{{ 'active' if request.endpoint == 'individual_history' else '' }}">History</a></li>
+                            <li><a href="{{ url_for('individual_insights') }}" class="{{ 'active' if request.endpoint == 'individual_insights' else '' }}">Insights</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('methodology') }}" class="{{ 'active' if request.endpoint == 'methodology' else '' }}">Methodology</a></li>
+                        <li><a href="{{ url_for('sources') }}" class="{{ 'active' if request.endpoint == 'sources' else '' }}">Sources</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Home</a></li>
+                        <li><a href="{{ url_for('methodology') }}" class="{{ 'active' if request.endpoint == 'methodology' else '' }}">Methodology</a></li>
+                        <li><a href="{{ url_for('sources') }}" class="{{ 'active' if request.endpoint == 'sources' else '' }}">Sources</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="nav-right">
+                <ul class="nav-links nav-auth">
+                    {% if session.get('user_id') %}
+                        <li>
+                            <a href="{{ url_for('profile') }}" class="nav-profile-pill {{ 'active' if request.endpoint == 'profile' else '' }}" title="User Profile">
+                                <span class="user-badge">{{ session.get('user_name') }} &bull; {{ 'Personal' if session.get('account_type') == 'INDIVIDUAL' else 'Org' }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('auth.logout') }}" class="nav-signout-btn">Sign Out</a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="{{ url_for('auth.login_individual') }}" class="nav-login-btn {{ 'active' if request.endpoint == 'auth.login_individual' else '' }}">
+                                Personal Login
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('auth.login_organization') }}" class="nav-login-btn {{ 'active' if request.endpoint == 'auth.login_organization' else '' }}">
+                                Organization Login
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm nav-cta-pill">
+                                Get Started
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+        <!-- Flash Alert Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Academic & Sustainability Footer -->
+    <footer class="footer-custom">
+        <div class="footer-container">
+            <div style="max-width: 420px;">
+                <div style="font-weight: 700; font-size: 1rem; color: #FFFFFF; margin-bottom: 0.4rem;">CarbonLens Analytics Platform</div>
+                <p style="color: #A3C9AE; margin-bottom: 0.6rem; font-size: 0.8rem;">
+                    B.Tech Computer Engineering &mdash; Data Science Project. Built using Python, Pandas, NumPy, Matplotlib, Seaborn, and SQLAlchemy.
+                </p>
+                <div style="font-size: 0.75rem; color: #8BA894;">
+                    Aligned with UN Sustainable Development Goals:
+                    <strong style="color: #D3DFD6;">SDG 12</strong> (Responsible Consumption),
+                    <strong style="color: #D3DFD6;">SDG 13</strong> (Climate Action), and
+                    <strong style="color: #D3DFD6;">SDG 9</strong> (Industry & Innovation).
+                </div>
+            </div>
+
+            <div>
+                <div style="font-weight: 600; color: #FFFFFF; margin-bottom: 0.5rem;">Methodological Reference</div>
+                <div class="footer-links">
+                    <a href="{{ url_for('methodology') }}">Calculation Boundaries</a>
+                    <a href="{{ url_for('sources') }}">Scientific Citations</a>
+                    <a href="{{ url_for('health') }}">System Status</a>
+                </div>
+                <div style="margin-top: 0.75rem; font-size: 0.725rem; color: #789681; max-width: 450px;">
+                    <strong>Academic Disclaimer:</strong> The calculated results represent analytical estimates derived from published factors and self-reported activity hours. They are not direct physical measurements of electrical consumption.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

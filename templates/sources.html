@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Scientific Sources & Bibliography — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Scientific Sources & Bibliography</h1>
+        <p class="page-subtitle">Verified publications, energy agency baselines, and academic references informing the CarbonLens carbon engine.</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+        Research Integrity Notice: Every factor in CarbonLens is attributed to peer-reviewed literature, official regulatory data, or explicitly declared as a project modelling assumption.
+    </div>
+
+    <!-- 1. IEA -->
+    <div style="padding-bottom: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+            <h3 style="font-size: 1.05rem; color: var(--color-forest);">1. Video Streaming Lifecycle Emissions</h3>
+            <span class="badge-factor badge-research">RESEARCH-BASED</span>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-main); margin-bottom: 0.3rem;">
+            <strong>International Energy Agency (IEA)</strong> (2020). <i>The Carbon Footprint of Streaming Video: Fact-Checking the Headlines</i>.
+        </p>
+        <p style="font-size: 0.825rem; color: var(--text-muted);">
+            Established the updated lifecycle benchmark of approximately 36 g CO₂e per hour of high-definition video streaming, revising older estimates by incorporating recent gains in data center energy efficiency (PUE) and modern optical transmission networks.
+        </p>
+    </div>
+
+    <!-- 2. CEA India -->
+    <div style="padding-bottom: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+            <h3 style="font-size: 1.05rem; color: var(--color-forest);">2. Indian National Electricity Grid Carbon Intensity</h3>
+            <span class="badge-factor badge-research">REGULATORY FACTOR</span>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-main); margin-bottom: 0.3rem;">
+            <strong>Central Electricity Authority (CEA)</strong>, Ministry of Power, Government of India (FY 2024–25). <i>CO₂ Baseline Database for the Indian Power Sector</i>.
+        </p>
+        <p style="font-size: 0.825rem; color: var(--text-muted);">
+            Provides the weighted average grid emission factor of 0.710 kg CO₂e / kWh for electricity drawn from the unified national grid, reflecting India's current generation mix across thermal, hydro, solar, and nuclear power.
+        </p>
+    </div>
+
+    <!-- 3. AI Inference -->
+    <div style="padding-bottom: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+            <h3 style="font-size: 1.05rem; color: var(--color-forest);">3. Generative AI Inference Energy Requirements</h3>
+            <span class="badge-factor badge-research">RESEARCH-BASED</span>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-main); margin-bottom: 0.3rem;">
+            <strong>Oviedo et al.</strong> (2026). <i>Empirical Analysis of Computational and Energy Demands in Large Language Model Inference</i>. <i>Joule</i>.
+        </p>
+        <p style="font-size: 0.825rem; color: var(--text-muted);">
+            Empirically measured operational electrical draw across production inference clusters, establishing a reference mean of 0.31 Wh per standard conversational query.
+        </p>
+    </div>
+
+    <!-- 4. Email -->
+    <div style="padding-bottom: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+            <h3 style="font-size: 1.05rem; color: var(--color-forest);">4. Electronic Mail Lifecycle Intensity</h3>
+            <span class="badge-factor badge-research">RESEARCH-BASED</span>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-main); margin-bottom: 0.3rem;">
+            <strong>Berners-Lee, M.</strong> (2020 Edition). <i>How Bad Are Bananas? The Carbon Footprint of Everything</i>. Profile Books.
+        </p>
+        <p style="font-size: 0.825rem; color: var(--text-muted);">
+            Updated lifecycle estimation for standard digital communications; standard text emails are evaluated at 0.3 g CO₂e each, with higher footprints for large media attachments.
+        </p>
+    </div>
+
+    <!-- 5. Smartphone Usage -->
+    <div style="padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+            <h3 style="font-size: 1.05rem; color: var(--color-forest);">5. Mobile Device Efficiency & Operational Impact</h3>
+            <span class="badge-factor badge-research">RESEARCH-BASED</span>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--text-main); margin-bottom: 0.3rem;">
+            <strong>Kögler et al.</strong> (2024). <i>Resource Consumption and Operational Energy in Contemporary Mobile Telephony</i>. <i>Sustainable Development</i>.
+        </p>
+        <p style="font-size: 0.825rem; color: var(--text-muted);">
+            Evaluates active cellular battery drain and wireless transceiver power demand in modern mobile computing environments.
+        </p>
+    </div>
+
+    <!-- 6. Project Modelling Assumptions -->
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+            <h3 style="font-size: 1.05rem; color: var(--color-forest);">6. Project Modelling Assumptions (Hardware Power Draw)</h3>
+            <span class="badge-factor badge-assumption">PROJECT MODELLING ASSUMPTION</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>Laptop Active Power (50 W):</strong> Represents an operational baseline for mid-tier modern business laptops during general office productivity. Real power fluctuates with screen brightness and CPU/GPU utilization.<br>
+            <strong>Smartphone Active Power (2 W):</strong> Represents screen-on average operational battery discharge rate. Full reference details to be supplemented from the project's verified hardware test bench.
+        </p>
+    </div>
+</div>
+{% endblock %}

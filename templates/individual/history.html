@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Footprint Calculation History — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Personal Footprint History</h1>
+        <p class="page-subtitle">Historical log of your previously submitted digital activity estimates.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('individual_calculator') }}" class="btn btn-primary btn-sm">+ New Calculation</a>
+    </div>
+</div>
+
+{% if not calculations %}
+    <div class="panel" style="text-align: center; padding: 3rem 1.5rem;">
+        <h2 style="font-size: 1.25rem; color: var(--color-forest); margin-bottom: 0.5rem;">No historical records found.</h2>
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">Submit your first calculation using the personal calculator.</p>
+        <a href="{{ url_for('individual_calculator') }}" class="btn btn-primary btn-sm">Open Calculator &rarr;</a>
+    </div>
+{% else %}
+    <div class="panel">
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Date & Time (UTC)</th>
+                        <th>Inputs Logged</th>
+                        <th>Daily Energy</th>
+                        <th>Daily CO₂e</th>
+                        <th>Monthly Projection</th>
+                        <th>Yearly Projection</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in calculations %}
+                        <tr>
+                            <td style="font-size: 0.825rem;">{{ c.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                            <td style="font-size: 0.8rem; color: var(--text-muted);">
+                                {{ c.laptop_hours }}h laptop, {{ c.smartphone_hours }}h phone, {{ c.streaming_hours }}h stream, {{ c.emails|int }} emails, {{ c.ai_queries|int }} AI
+                            </td>
+                            <td class="mono-cell">{{ "%.3f"|format(c.daily_energy) }} kWh</td>
+                            <td class="mono-cell" style="font-weight: 600; color: var(--color-forest);">{{ "%.1f"|format(c.daily_co2e) }} g</td>
+                            <td class="mono-cell">{{ "%.2f"|format(c.monthly_co2e) }} kg</td>
+                            <td class="mono-cell">{{ "%.1f"|format(c.yearly_co2e) }} kg</td>
+                            <td style="text-align: right;">
+                                <a href="{{ url_for('individual_dashboard', calc_id=c.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.775rem;">
+                                    View Analytics &rarr;
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

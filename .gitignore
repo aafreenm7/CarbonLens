@@ -1,0 +1,36 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Instance folder and SQLite DB
+instance/
+*.db
+*.sqlite3
+
+# Uploaded and exported files (keep gitkeep if needed)
+uploads/*
+!uploads/.gitkeep
+exports/*
+!exports/.gitkeep
+static/generated_charts/*
+!static/generated_charts/.gitkeep
+
+# Environment variables
+.env
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# VS Code & IDEs
+.vscode/
+.idea/
+*.swp

@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}CarbonLens — Digital Carbon Footprint Analytics Platform{% endblock %}
+
+{% block content %}
+<section style="padding: 2.5rem 0 3.5rem 0; border-bottom: 1px solid var(--border-color);">
+    <div style="max-width: 800px;">
+        <span class="brand-tag" style="background-color: var(--bg-accent); color: var(--color-forest); border-color: var(--color-sage-light); font-weight: 600; padding: 4px 8px; font-size: 0.8rem;">
+            B.Tech Computer Engineering &mdash; Data Science Project
+        </span>
+        <h1 style="font-size: 2.6rem; font-weight: 800; color: var(--color-forest); letter-spacing: -0.03em; margin: 1rem 0 0.8rem 0; line-height: 1.15;">
+            Digital Carbon Footprint Analytics Platform
+        </h1>
+        <p style="font-size: 1.15rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.75rem;">
+            A rigorous Python Data Science platform to model, clean, calculate, and visualize the estimated electricity consumption and greenhouse gas emissions (\(\text{CO}_2\text{e}\)) resulting from modern digital enterprise and personal activities.
+        </p>
+
+        <div style="display: flex; gap: 0.85rem; flex-wrap: wrap; margin-bottom: 2rem;">
+            <a href="{{ url_for('auth.login_individual') }}" class="btn btn-primary" style="padding: 0.7rem 1.4rem; font-size: 0.95rem;">
+                Personal Login &rarr;
+            </a>
+            <a href="{{ url_for('auth.login_organization') }}" class="btn btn-secondary" style="padding: 0.7rem 1.4rem; font-size: 0.95rem;">
+                Organization Login &rarr;
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-secondary" style="padding: 0.7rem 1.2rem; font-size: 0.95rem;">
+                Create Account
+            </a>
+            <a href="{{ url_for('methodology') }}" class="btn btn-secondary" style="padding: 0.7rem 1.2rem; font-size: 0.95rem;">
+                Methodology & Factors
+            </a>
+        </div>
+
+        <!-- Separate Portal Entry Points -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem;">
+            <div class="panel" style="margin-bottom: 0; background-color: var(--bg-mint); border: 1px solid var(--border-pastel); padding: 1.5rem;">
+                <span class="badge-factor badge-research" style="margin-bottom: 0.4rem;">PORTAL 1 &mdash; PERSONAL</span>
+                <h3 style="font-size: 1.15rem; color: var(--color-forest); margin-top: 0.3rem; margin-bottom: 0.4rem;">
+                    Individual / Personal Portal
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.5;">
+                    Log daily computer hours, smartphone screen time, video streaming, email volume, and generative AI queries to view your verified footprint.
+                </p>
+                <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+                    <a href="{{ url_for('auth.login_individual') }}" class="btn btn-primary btn-sm">
+                        Personal Login &rarr;
+                    </a>
+                    <a href="{{ url_for('auth.register', type='INDIVIDUAL') }}" style="font-size: 0.8rem; font-weight: 600; color: var(--color-forest);">
+                        Register Individual &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-bottom: 0; background-color: var(--bg-mint-soft); border: 1px solid var(--border-pastel); padding: 1.5rem;">
+                <span class="badge-factor badge-assumption" style="margin-bottom: 0.4rem;">PORTAL 2 &mdash; ENTERPRISE</span>
+                <h3 style="font-size: 1.15rem; color: var(--color-forest); margin-top: 0.3rem; margin-bottom: 0.4rem;">
+                    Organization / Company Portal
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.5;">
+                    Upload workplace activity telemetry datasets in CSV or Excel format for automated data auditing, EDA, departmental breakdowns, and PDF reporting.
+                </p>
+                <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+                    <a href="{{ url_for('auth.login_organization') }}" class="btn btn-primary btn-sm">
+                        Organization Login &rarr;
+                    </a>
+                    <a href="{{ url_for('auth.register', type='ORGANIZATION') }}" style="font-size: 0.8rem; font-weight: 600; color: var(--color-forest);">
+                        Register Company &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Core Data Science Workflow -->
+<section style="padding: 3rem 0; border-bottom: 1px solid var(--border-color);">
+    <div style="margin-bottom: 1.75rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-forest); margin-bottom: 0.35rem;">
+            The Core Python Data Science Pipeline
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            Every dashboard metric, visualization, and insight is generated directly from physical formulas and statistical processing in Python.
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="panel" style="margin-bottom: 0; padding: 1.25rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-sage); font-family: var(--font-mono);">01 &mdash; ACQUIRE</div>
+            <div style="font-weight: 700; font-size: 1rem; color: var(--color-forest); margin: 0.3rem 0;">Data Ingestion</div>
+            <p style="font-size: 0.825rem; color: var(--text-muted);">
+                CSV and Excel parsing with intelligent column detection and flexible alias recognition.
+            </p>
+        </div>
+
+        <div class="panel" style="margin-bottom: 0; padding: 1.25rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-sage); font-family: var(--font-mono);">02 &mdash; AUDIT & CLEAN</div>
+            <div style="font-weight: 700; font-size: 1rem; color: var(--color-forest); margin: 0.3rem 0;">Data Quality</div>
+            <p style="font-size: 0.825rem; color: var(--text-muted);">
+                Missing value imputation, duplicate removal, invalid negative input handling, and 1.5 &times; IQR outlier auditing.
+            </p>
+        </div>
+
+        <div class="panel" style="margin-bottom: 0; padding: 1.25rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-sage); font-family: var(--font-mono);">03 &mdash; CALCULATE</div>
+            <div style="font-weight: 700; font-size: 1rem; color: var(--color-forest); margin: 0.3rem 0;">Carbon Engine</div>
+            <p style="font-size: 0.825rem; color: var(--text-muted);">
+                Vectorized calculations in Pandas applying the 0.710 kg/kWh Indian Grid factor and IEA streaming lifecycle boundaries.
+            </p>
+        </div>
+
+        <div class="panel" style="margin-bottom: 0; padding: 1.25rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-sage); font-family: var(--font-mono);">04 &mdash; EXPLORE</div>
+            <div style="font-weight: 700; font-size: 1rem; color: var(--color-forest); margin: 0.3rem 0;">EDA & Modeling</div>
+            <p style="font-size: 0.825rem; color: var(--text-muted);">
+                Departmental aggregations, summary statistics, correlation matrices, and optional scikit-learn regression.
+            </p>
+        </div>
+
+        <div class="panel" style="margin-bottom: 0; padding: 1.25rem;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-sage); font-family: var(--font-mono);">05 &mdash; ACTION</div>
+            <div style="font-weight: 700; font-size: 1rem; color: var(--color-forest); margin: 0.3rem 0;">What-If Scenarios</div>
+            <p style="font-size: 0.825rem; color: var(--text-muted);">
+                Interactive percentage simulation for digital efficiency targets, dynamic insights, and official PDF reporting.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Dual Application Modes -->
+<section style="padding: 3rem 0; border-bottom: 1px solid var(--border-color);">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="panel" style="margin-bottom: 0;">
+            <div class="metric-label">Mode 1</div>
+            <h3 style="font-size: 1.25rem; color: var(--color-forest); margin-bottom: 0.5rem;">Individual Footprint Calculator</h3>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Designed for students, developers, and remote knowledge workers to log daily digital device hours, online video streaming, emails sent, and generative AI queries.
+            </p>
+            <ul style="font-size: 0.85rem; color: var(--text-main); margin-left: 1.2rem; margin-bottom: 1.25rem; line-height: 1.8;">
+                <li>Separate tracking of direct device energy (kWh) and emissions (\(\text{gCO}_2\text{e}\))</li>
+                <li>Projections for monthly (30-day) and yearly (365-day) impacts</li>
+                <li>Longitudinal historical tracking with timestamped records</li>
+                <li>Data-driven personal efficiency recommendations</li>
+            </ul>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{{ url_for('auth.login_individual') }}" class="btn btn-primary btn-sm">Personal Login &rarr;</a>
+                <a href="{{ url_for('auth.register', type='INDIVIDUAL') }}" class="btn btn-secondary btn-sm">Register Individual</a>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-bottom: 0;">
+            <div class="metric-label">Mode 2</div>
+            <h3 style="font-size: 1.25rem; color: var(--color-forest); margin-bottom: 0.5rem;">Organization Digital Sustainability</h3>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Built for IT managers, sustainability officers, and operations teams to upload workplace digital activity datasets in CSV or Excel format.
+            </p>
+            <ul style="font-size: 0.85rem; color: var(--text-main); margin-left: 1.2rem; margin-bottom: 1.25rem; line-height: 1.8;">
+                <li>Drag-and-drop CSV/XLSX uploader with schema auto-mapping</li>
+                <li>Audited cleaning log detailing duplicates, missing values, and anomalies</li>
+                <li>Publication-grade analytical visualizations (Matplotlib / Seaborn)</li>
+                <li>Inter-departmental allocation, What-If simulator, and ReportLab PDF reports</li>
+            </ul>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{{ url_for('auth.login_organization') }}" class="btn btn-primary btn-sm">Organization Login &rarr;</a>
+                <a href="{{ url_for('auth.register', type='ORGANIZATION') }}" class="btn btn-secondary btn-sm">Register Company</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Academic Syllabus Mapping & Sustainability -->
+<section style="padding: 3rem 0;">
+    <div class="page-header" style="border: none; margin-bottom: 1rem;">
+        <div>
+            <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-forest);">
+                Academic Foundation & Syllabus Alignment
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Demonstrates core Computer Engineering and Data Science curriculum principles.
+            </p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+        <div class="panel" style="margin-bottom: 0;">
+            <div style="font-weight: 600; color: var(--color-forest); margin-bottom: 0.35rem;">Vectorized Data Processing</div>
+            <p style="font-size: 0.825rem; color: var(--text-muted);">
+                Utilizes Pandas series vectorization and NumPy operations for rapid calculations across activity columns without slow Python iteration loops.
+            </p>
+        </div>
+
+        <div class="panel" style="margin-bottom: 0;">
+            <div style="font-weight: 600; color: var(--color-forest); margin-bottom: 0.35rem;">Non-Destructive Cleaning Pipeline</div>
+            <p style="font-size: 0.825rem; color: var(--text-muted);">
+                Distinguishes between mathematically invalid records (e.g. negative hours) and statistical outliers (1.5 &times; IQR), providing a verifiable audit trail.
+            </p>
+        </div>
+
+        <div class="panel" style="margin-bottom: 0;">
+            <div style="font-weight: 600; color: var(--color-forest); margin-bottom: 0.35rem;">Scientific Integrity & Boundaries</div>
+            <p style="font-size: 0.825rem; color: var(--text-muted);">
+                Adheres to published carbon accounting standards (IEA, CEA India, Joule), strictly separating energy (\(\text{kWh}\)) from carbon (\(\text{kgCO}_2\text{e}\)) and avoiding double-counting.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

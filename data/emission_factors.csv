@@ -1,0 +1,7 @@
+activity,factor,unit,factor_type,source,notes
+indian_grid_electricity,0.710,kgCO2e/kWh,RESEARCH_BASED,"Central Electricity Authority, India, FY2024–25","Weighted-average Indian grid emission factor used to convert electrical energy to CO2e."
+laptop_power,50,W,PROJECT_ASSUMPTION,"Project modelling assumption","Standard office laptop active operational power draw."
+smartphone_power,2,W,PROJECT_ASSUMPTION,"Project modelling assumption","Active operational power draw of modern mobile smartphone."
+video_streaming,36,gCO2e/hour,RESEARCH_BASED,"International Energy Agency (IEA), 2020","Encompasses transmission networks, data centers, and typical client device. Avoid double counting."
+email,0.3,gCO2e/email,RESEARCH_BASED,"Updated Berners-Lee figures, 2020","Standard text email exchange without oversized multimedia attachments."
+ai_query,0.31,Wh/query,RESEARCH_BASED,"Oviedo et al., Joule, 2026","Average electrical energy consumed per generative AI query; multiplied by grid factor for emissions."

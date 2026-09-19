@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Scientific Methodology & Calculation Boundaries — CarbonLens{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Scientific Methodology & Mathematical Formulas</h1>
+        <p class="page-subtitle">Complete transparency regarding physical energy conversions, lifecycle boundaries, and carbon emission factors.</p>
+    </div>
+</div>
+
+<!-- Important Boundary Alert -->
+<div class="panel" style="border-left: 4px solid var(--color-forest); background-color: var(--bg-subtle);">
+    <h3 style="font-size: 1.05rem; color: var(--color-forest); margin-bottom: 0.35rem;">Critical Accounting Boundary: Double-Counting Prevention</h3>
+    <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.6;">
+        In digital carbon footprint analysis, end-user device consumption can easily be double-counted if operational hardware power is blindly summed with lifecycle services.
+        According to the <strong>International Energy Agency (IEA, 2020)</strong> methodology, the video streaming factor (\(36\text{ gCO}_2\text{e/hr}\)) encompasses data transmission networks, data centers, and the typical client display device.
+        Therefore, CarbonLens explicitly ensures that laptop or smartphone operational electricity is <strong>not</strong> duplicated during streaming hours.
+    </p>
+</div>
+
+<!-- Grid Factor -->
+<div class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.75rem;">
+        <h2 class="panel-title">1. Electricity Grid Emission Factor</h2>
+        <span class="badge-factor badge-research">RESEARCH-BASED</span>
+    </div>
+    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        Electrical energy consumption is converted into greenhouse gas emissions (\(\text{CO}_2\text{e}\)) using the official weighted-average emission factor for the Indian national electricity grid.
+    </p>
+    <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; font-family: var(--font-mono); font-size: 0.875rem; margin-bottom: 0.75rem;">
+        Grid Emission Factor = 0.710 kg CO₂e / kWh &nbsp;&nbsp;(710 g CO₂e / kWh)<br>
+        Source: Central Electricity Authority (CEA), Ministry of Power, Government of India (FY2024–25 Baseline).
+    </div>
+</div>
+
+<!-- Activity Formulas -->
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title">2. Activity Mathematical Models</h2>
+    </div>
+
+    <!-- Laptop -->
+    <div style="margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; color: var(--color-forest);">A. Laptop Computer Usage</h3>
+            <span class="badge-factor badge-assumption">PROJECT MODELLING ASSUMPTION</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Operational electricity consumption is based on an active power draw of <strong>50 Watts</strong> for a typical business laptop during knowledge work.
+        </p>
+        <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; font-family: var(--font-mono); font-size: 0.825rem; line-height: 1.6;">
+            Energy (kWh) = [ Usage Hours &times; 50 W ] / 1000<br>
+            Emissions (kg CO₂e) = Energy (kWh) &times; 0.710 kg/kWh<br>
+            Emissions (g CO₂e) = Emissions (kg CO₂e) &times; 1000<br>
+            <i>Example: 4 hours = (4 &times; 50 / 1000) = 0.20 kWh = 0.142 kg CO₂e (142 g CO₂e)</i>
+        </div>
+    </div>
+
+    <!-- Smartphone -->
+    <div style="margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; color: var(--color-forest);">B. Smartphone Usage</h3>
+            <span class="badge-factor badge-assumption">PROJECT MODELLING ASSUMPTION</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Active operational power consumption is modelled at <strong>2 Watts</strong> during screen-on active operation.
+        </p>
+        <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; font-family: var(--font-mono); font-size: 0.825rem; line-height: 1.6;">
+            Energy (kWh) = [ Usage Hours &times; 2 W ] / 1000<br>
+            Emissions (kg CO₂e) = Energy (kWh) &times; 0.710 kg/kWh<br>
+            <i>Example: 2 hours = (2 &times; 2 / 1000) = 0.004 kWh = 0.00284 kg CO₂e (2.84 g CO₂e)</i>
+        </div>
+    </div>
+
+    <!-- Video Streaming -->
+    <div style="margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; color: var(--color-forest);">C. High-Definition Video Streaming</h3>
+            <span class="badge-factor badge-research">RESEARCH-BASED (IEA, 2020)</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Encompasses end-to-end lifecycle impacts including server encoding, content delivery networks (CDNs), cellular/broadband transmission, and end-device rendering.
+        </p>
+        <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; font-family: var(--font-mono); font-size: 0.825rem; line-height: 1.6;">
+            Emissions (g CO₂e) = Streaming Hours &times; 36.0 g CO₂e/hr<br>
+            Emissions (kg CO₂e) = Emissions (g CO₂e) / 1000<br>
+            <i>Example: 1.5 hours = 1.5 &times; 36.0 = 54.0 g CO₂e (0.054 kg CO₂e)</i>
+        </div>
+    </div>
+
+    <!-- Email -->
+    <div style="margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; color: var(--color-forest);">D. Email Communication</h3>
+            <span class="badge-factor badge-research">RESEARCH-BASED (BERNERS-LEE REVISED)</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Standard text emails without large attachments are modelled at <strong>0.3 g CO₂e per message</strong>, accounting for mail server storage and network routing.
+        </p>
+        <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; font-family: var(--font-mono); font-size: 0.825rem; line-height: 1.6;">
+            Emissions (g CO₂e) = Number of Emails &times; 0.3 g CO₂e/msg<br>
+            Emissions (kg CO₂e) = Emissions (g CO₂e) / 1000<br>
+            <i>Example: 25 emails = 25 &times; 0.3 = 7.5 g CO₂e (0.0075 kg CO₂e)</i>
+        </div>
+    </div>
+
+    <!-- AI Queries -->
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+            <h3 style="font-size: 1rem; color: var(--color-forest);">E. Generative AI Inference Queries</h3>
+            <span class="badge-factor badge-research">RESEARCH-BASED (OVIEDO ET AL., JOULE 2026)</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Average electrical energy consumed per large language model (LLM) inference prompt is modelled at <strong>0.31 Wh per query</strong>, converted using the grid emission factor.
+        </p>
+        <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; font-family: var(--font-mono); font-size: 0.825rem; line-height: 1.6;">
+            AI Energy (kWh) = [ Query Count &times; 0.31 Wh ] / 1000<br>
+            Emissions (kg CO₂e) = AI Energy (kWh) &times; 0.710 kg/kWh<br>
+            Emissions (g CO₂e) = Emissions (kg CO₂e) &times; 1000<br>
+            <i>Example: 10 queries = (10 &times; 0.31 / 1000) = 0.0031 kWh = 0.0022 kg CO₂e (2.20 g CO₂e)</i>
+        </div>
+    </div>
+</div>
+
+<!-- Time Horizon Projections -->
+<div class="panel">
+    <h2 class="panel-title" style="margin-bottom: 0.5rem;">3. Projection Modelling (Monthly & Annualized)</h2>
+    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        When input datasets capture daily work activity, projections are extrapolated mathematically:
+    </p>
+    <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; font-family: var(--font-mono); font-size: 0.85rem;">
+        Monthly Projection (kg CO₂e) = Daily Total &times; 30<br>
+        Yearly Projection (kg CO₂e) = Daily Total &times; 365
+    </div>
+    <div style="font-size: 0.775rem; color: var(--text-light); margin-top: 0.5rem;">
+        *Note: Projections assume steady-state baseline activity patterns and are explicitly labelled as modelled estimates rather than continuous smart-meter measurements.
+    </div>
+</div>
+{% endblock %}

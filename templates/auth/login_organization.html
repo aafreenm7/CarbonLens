@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Organization / Company Sign In — CarbonLens{% endblock %}
+
+{% block content %}
+<div style="max-width: 920px; margin: 2rem auto;">
+    <div class="login-split-grid">
+        
+        <!-- Left Column: Organization / Company Presentation -->
+        <div style="background-color: var(--color-forest); color: #FFFFFF; padding: 2.5rem 2rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; color: var(--color-mint); margin-bottom: 0.5rem; text-transform: uppercase;">
+                    Digital Sustainability Analytics
+                </div>
+                <h2 style="font-size: 1.65rem; font-weight: 700; line-height: 1.25; margin-bottom: 1rem; color: #FFFFFF;">
+                    Understand the carbon cost of organization digital activity.
+                </h2>
+                <p style="font-size: 0.875rem; color: #D3E0D6; line-height: 1.6; margin-bottom: 2rem;">
+                    Upload enterprise digital activity telemetry in CSV or Excel format to initiate validation, data cleaning, exploratory data analysis, and carbon reduction scenarios.
+                </p>
+
+                <!-- Process Diagram -->
+                <div style="background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-sm); padding: 1.25rem; font-family: var(--font-mono); font-size: 0.825rem; text-align: center; color: #E8F5E9; line-height: 1.8;">
+                    <div>ORGANIZATION DATASET (CSV/XLSX)</div>
+                    <div style="color: var(--color-mint);">&darr;</div>
+                    <div>DATA AUDIT & CLEANING</div>
+                    <div style="color: var(--color-mint);">&darr;</div>
+                    <div>DEPARTMENTAL EDA & CHARTS</div>
+                    <div style="color: var(--color-mint);">&darr;</div>
+                    <div>WHAT-IF SCENARIOS & PDF REPORTS</div>
+                </div>
+            </div>
+
+            <div style="font-size: 0.75rem; color: #95BBA0; margin-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1rem;">
+                Organization Portal &bull; B.Tech Computer Engineering Academic Project
+            </div>
+        </div>
+
+        <!-- Right Column: Organization Login Form -->
+        <div style="padding: 2.5rem 2rem;">
+            <div style="margin-bottom: 1.75rem;">
+                <span class="badge-factor badge-assumption" style="margin-bottom: 0.5rem;">ORGANIZATION / COMPANY</span>
+                <h1 style="font-size: 1.4rem; font-weight: 700; color: var(--color-forest); margin-top: 0.35rem; margin-bottom: 0.25rem;">
+                    Organization Sign In
+                </h1>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">
+                    Access your company sustainability overview, data pipelines, and analytics.
+                </p>
+            </div>
+
+            {% if session.get('user_id') %}
+                <div style="margin-bottom: 1.25rem; padding: 0.75rem 1rem; background-color: var(--bg-mint-soft); border: 1px solid var(--border-pastel); border-radius: var(--radius-sm); font-size: 0.825rem;">
+                    You are currently signed in as <strong>{{ session.get('user_name') }}</strong> ({{ session.get('account_type') }}). Signing in below will switch accounts, or <a href="{{ url_for('organization_dashboard') if session.get('account_type') == 'ORGANIZATION' else url_for('individual_dashboard') }}" style="font-weight: 600; text-decoration: underline;">return to your dashboard &rarr;</a>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('auth.login_organization') }}">
+                <div class="form-group">
+                    <label for="email" class="form-label">Work Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" value="{{ email or '' }}" required autofocus placeholder="admin@company.com">
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+                        <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
+                        <a href="{{ url_for('auth.forgot_password') }}" style="font-size: 0.775rem;">Forgot password?</a>
+                    </div>
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Enter password">
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.65rem;">
+                        Sign In to Organization Dashboard &rarr;
+                    </button>
+                </div>
+            </form>
+
+            <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); font-size: 0.85rem; text-align: center; color: var(--text-muted);">
+                Don't have an organization account?
+                <a href="{{ url_for('auth.register', type='ORGANIZATION') }}" style="font-weight: 600; color: var(--color-forest);">Register Company Here</a>
+            </div>
+
+            <div style="margin-top: 0.75rem; padding: 0.75rem; background-color: var(--bg-mint-soft); border: 1px solid var(--border-pastel); border-radius: var(--radius-sm); font-size: 0.8rem; text-align: center;">
+                Need personal carbon calculator?
+                <a href="{{ url_for('auth.login_individual') }}" style="font-weight: 600; color: var(--color-forest);">Individual / Personal Sign In &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
