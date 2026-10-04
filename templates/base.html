@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CarbonLens — Digital Carbon Footprint Analytics{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Local Standalone Interactive Visualization Engine (Chart.js UMD) -->
+    <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -34,11 +36,9 @@
                             <li><a href="{{ url_for('individual_history') }}" class="{{ 'active' if request.endpoint == 'individual_history' else '' }}">History</a></li>
                             <li><a href="{{ url_for('individual_insights') }}" class="{{ 'active' if request.endpoint == 'individual_insights' else '' }}">Insights</a></li>
                         {% endif %}
-                        <li><a href="{{ url_for('methodology') }}" class="{{ 'active' if request.endpoint == 'methodology' else '' }}">Methodology</a></li>
                         <li><a href="{{ url_for('sources') }}" class="{{ 'active' if request.endpoint == 'sources' else '' }}">Sources</a></li>
                     {% else %}
                         <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Home</a></li>
-                        <li><a href="{{ url_for('methodology') }}" class="{{ 'active' if request.endpoint == 'methodology' else '' }}">Methodology</a></li>
                         <li><a href="{{ url_for('sources') }}" class="{{ 'active' if request.endpoint == 'sources' else '' }}">Sources</a></li>
                     {% endif %}
                 </ul>
@@ -47,24 +47,78 @@
             <div class="nav-right">
                 <ul class="nav-links nav-auth">
                     {% if session.get('user_id') %}
-                        <li>
-                            <a href="{{ url_for('profile') }}" class="nav-profile-pill {{ 'active' if request.endpoint == 'profile' else '' }}" title="User Profile">
+                        <!-- Authenticated User Profile & Details Dropdown -->
+                        <li class="profile-dropdown-wrapper">
+                            <button type="button" class="nav-profile-pill" id="profileDropdownBtn" aria-expanded="false" title="Account Details & Profile">
+                                <span class="profile-avatar-circle">{{ session.get('user_name', 'U')[:1]|upper }}</span>
                                 <span class="user-badge">{{ session.get('user_name') }} &bull; {{ 'Personal' if session.get('account_type') == 'INDIVIDUAL' else 'Org' }}</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ url_for('auth.logout') }}" class="nav-signout-btn">Sign Out</a>
+                                <span class="profile-chevron">&#9662;</span>
+                            </button>
+                            <div class="profile-card-dropdown" id="profileDropdownMenu">
+                                <div class="profile-dropdown-header">
+                                    <div class="profile-user-name">{{ session.get('user_name') }}</div>
+                                    <div class="profile-user-email">{{ session.get('user_email', '') }}</div>
+                                </div>
+                                <div class="profile-dropdown-body">
+                                    <div class="profile-info-row">
+                                        <span class="info-label">Account Purpose:</span>
+                                        <span class="info-val">{{ 'Individual / Personal' if session.get('account_type') == 'INDIVIDUAL' else 'Organization / Company' }}</span>
+                                    </div>
+                                    {% if session.get('org_name') %}
+                                    <div class="profile-info-row">
+                                        <span class="info-label">Organization:</span>
+                                        <span class="info-val">{{ session.get('org_name') }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="profile-info-row">
+                                        <span class="info-label">Session Status:</span>
+                                        <span class="info-val status-badge-active">Authenticated</span>
+                                    </div>
+                                </div>
+                                <div class="profile-dropdown-footer">
+                                    <a href="{{ url_for('profile') }}" class="dropdown-link-item">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: -2px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                        Account Details
+                                    </a>
+                                    {% if session.get('account_type') == 'ORGANIZATION' %}
+                                        <a href="{{ url_for('organization_dashboard') }}" class="dropdown-link-item">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: -2px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                            Organization Dashboard
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('individual_dashboard') }}" class="dropdown-link-item">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: -2px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                            Personal Dashboard
+                                        </a>
+                                    {% endif %}
+                                    <a href="{{ url_for('auth.logout') }}" class="dropdown-link-item link-logout">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: -2px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                        Sign Out
+                                    </a>
+                                </div>
+                            </div>
                         </li>
                     {% else %}
-                        <li>
-                            <a href="{{ url_for('auth.login_individual') }}" class="nav-login-btn {{ 'active' if request.endpoint == 'auth.login_individual' else '' }}">
-                                Personal Login
+                        <!-- Unauthenticated Top-Right Sign In & Registration Area -->
+                        <li class="signin-dropdown-wrapper">
+                            <a href="{{ url_for('auth.login') }}" class="btn-signin-header nav-login-btn {{ 'active' if request.endpoint and 'login' in request.endpoint else '' }}" id="headerSignInBtn" title="Sign In to CarbonLens">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px; vertical-align: -2px;">
+                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                    <polyline points="10 17 15 12 10 7"></polyline>
+                                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                                </svg>
+                                Sign In
                             </a>
-                        </li>
-                        <li>
-                            <a href="{{ url_for('auth.login_organization') }}" class="nav-login-btn {{ 'active' if request.endpoint == 'auth.login_organization' else '' }}">
-                                Organization Login
-                            </a>
+                            <div class="signin-dropdown-menu">
+                                <a href="{{ url_for('auth.login_individual') }}" class="signin-menu-link">
+                                    <div class="menu-title">Personal / Individual Login</div>
+                                    <div class="menu-desc">Personal footprint calculation &amp; tracking</div>
+                                </a>
+                                <a href="{{ url_for('auth.login_organization') }}" class="signin-menu-link">
+                                    <div class="menu-title">Organization / Company Login</div>
+                                    <div class="menu-desc">Organizational telemetry &amp; emissions audit</div>
+                                </a>
+                            </div>
                         </li>
                         <li>
                             <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm nav-cta-pill">
@@ -93,10 +147,10 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Academic & Sustainability Footer -->
+    <!-- Academic & Sustainability Footer with Project Credits -->
     <footer class="footer-custom">
         <div class="footer-container">
-            <div style="max-width: 420px;">
+            <div style="max-width: 440px;">
                 <div style="font-weight: 700; font-size: 1rem; color: #FFFFFF; margin-bottom: 0.4rem;">CarbonLens Analytics Platform</div>
                 <p style="color: #A3C9AE; margin-bottom: 0.6rem; font-size: 0.8rem;">
                     B.Tech Computer Engineering &mdash; Data Science Project. Built using Python, Pandas, NumPy, Matplotlib, Seaborn, and SQLAlchemy.
@@ -110,18 +164,50 @@
             </div>
 
             <div>
-                <div style="font-weight: 600; color: #FFFFFF; margin-bottom: 0.5rem;">Methodological Reference</div>
+                <div style="font-weight: 600; color: #FFFFFF; margin-bottom: 0.5rem;">Scientific Resources</div>
                 <div class="footer-links">
-                    <a href="{{ url_for('methodology') }}">Calculation Boundaries</a>
                     <a href="{{ url_for('sources') }}">Scientific Citations</a>
                     <a href="{{ url_for('health') }}">System Status</a>
                 </div>
                 <div style="margin-top: 0.75rem; font-size: 0.725rem; color: #789681; max-width: 450px;">
-                    <strong>Academic Disclaimer:</strong> The calculated results represent analytical estimates derived from published factors and self-reported activity hours. They are not direct physical measurements of electrical consumption.
+                    <strong>Academic Disclaimer:</strong> The calculated results represent analytical estimates derived from published emission factors and self-reported activity hours. They are not direct physical measurements of electrical consumption.
                 </div>
             </div>
         </div>
+
+        <!-- Project Credits Section -->
+        <div class="project-credits-bar">
+            <div class="project-credits-title">Project by</div>
+            <div class="project-credits-names">
+                <span class="credit-author">Aafreen Mujawar</span>
+                <span class="credit-bullet">&bull;</span>
+                <span class="credit-author">Shrutika Birkalwar</span>
+                <span class="credit-bullet">&bull;</span>
+                <span class="credit-author">Parth Asati</span>
+                <span class="credit-bullet">&bull;</span>
+                <span class="credit-author">Sohani Koul</span>
+            </div>
+        </div>
     </footer>
+
+    <!-- Interactive Chart Expand / Zoom Lightbox Modal -->
+    <div id="chartExpandModal" class="chart-modal-backdrop" role="dialog" aria-modal="true" style="display: none;">
+        <div class="chart-modal-dialog">
+            <div class="chart-modal-header">
+                <div>
+                    <h3 id="modalChartTitle" class="chart-modal-title">Enlarged Visualization</h3>
+                    <span id="modalChartSubtitle" class="chart-modal-subtitle">Interactive High-Resolution Analytics</span>
+                </div>
+                <button type="button" id="closeModalBtn" class="chart-modal-close" aria-label="Close chart zoom modal">&times;</button>
+            </div>
+            <div class="chart-modal-body">
+                <div class="modal-canvas-wrapper">
+                    <canvas id="modalChartCanvas"></canvas>
+                </div>
+                <div id="modalChartDetails" class="chart-modal-details"></div>
+            </div>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}

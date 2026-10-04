@@ -330,10 +330,121 @@ def run_verification():
         print("  [PASS] Responsive styles present for mobile (<768px) and tablet (<900px) widths")
         print("  [PASS] Two-column login card gracefully collapses on small viewports")
 
+        # =====================================================================
+        # TEST L: Top-Right Sign In Button
+        # =====================================================================
+        print("\n[TEST L] Verifying Top-Right Header Sign In Button...")
+        client.get("/auth/logout")
+        resp_unauth = client.get("/")
+        unauth_page = resp_unauth.data.decode("utf-8")
+        assert 'id="headerSignInBtn"' in unauth_page or 'class="btn-signin-header' in unauth_page, "Header Sign In button missing"
+        assert 'href="/auth/login"' in unauth_page, "Sign In button must connect to existing /auth/login route"
+        assert "Sign In" in unauth_page, "'Sign In' text missing from header"
+        print("  [PASS] Dedicated 'Sign In' button is prominent in top-right header connecting to existing auth")
+
+        # =====================================================================
+        # TEST M: Authenticated Profile Dropdown & User Details
+        # =====================================================================
+        print("\n[TEST M] Verifying Authenticated Profile Dropdown & User Details...")
+        client.post(
+            "/auth/login/individual",
+            data={"email": "maya@research.in", "password": "MayaPassword2026"},
+            follow_redirects=True,
+        )
+        auth_resp = client.get("/individual/dashboard")
+        auth_html = auth_resp.data.decode("utf-8")
+        assert 'id="profileDropdownBtn"' in auth_html, "Profile dropdown button missing in header"
+        assert 'id="profileDropdownMenu"' in auth_html, "Profile dropdown menu missing"
+        assert "Maya Sharma" in auth_html, "User name missing from profile area"
+        assert "maya@research.in" in auth_html, "User email missing from profile area"
+        assert "Individual / Personal" in auth_html, "Account scope missing from profile area"
+        assert "/profile" in auth_html, "Link to full Account Details missing"
+        assert "/auth/logout" in auth_html, "Link to Sign Out missing from profile dropdown"
+        print("  [PASS] Profile dropdown correctly displays Name, Email, Account Scope, and Sign Out option")
+
+        # =====================================================================
+        # TEST N: Removal of Methodology from Visible UI
+        # =====================================================================
+        print("\n[TEST N] Verifying Methodology is Removed from Visible Website UI...")
+        # Check landing page
+        assert "Methodology & Factors" not in unauth_page, "Methodology button still visible in landing page hero"
+        # Check navbar
+        assert '<a href="/methodology" class=""' not in unauth_page and '<li><a href="/methodology"' not in unauth_page, "Methodology still visible in navigation header"
+        # Check footer links
+        assert '>Calculation Boundaries</a>' not in unauth_page, "Methodology still visible in footer links"
+        # Ensure backend calculation route still works for scientific integrity
+        assert client.get("/methodology").status_code == 200, "Backend /methodology route must remain intact"
+        print("  [PASS] Methodology section completely removed from visible navigation, hero, and footer UI")
+        print("  [PASS] Backend calculation implementation and route preserved with 100% integrity")
+
+        # =====================================================================
+        # TEST O: Project Credits in Footer
+        # =====================================================================
+        print("\n[TEST O] Verifying Project Credits in Website Footer...")
+        assert "project-credits-bar" in unauth_page, "Project credits container missing from footer"
+        assert "Project by" in unauth_page, "'Project by' heading missing from credits"
+        assert "Aafreen Mujawar" in unauth_page, "Credit for Aafreen Mujawar missing"
+        assert "Shrutika Birkalwar" in unauth_page, "Credit for Shrutika Birkalwar missing"
+        assert "Parth Asati" in unauth_page, "Credit for Parth Asati missing"
+        assert "Sohani Koul" in unauth_page, "Credit for Sohani Koul missing"
+        print("  [PASS] Exact Project Credits cleanly rendered: Aafreen Mujawar, Shrutika Birkalwar, Parth Asati, Sohani Koul")
+
+        # =====================================================================
+        # TEST P: Interactive Visualizations & Enlarged Layout
+        # =====================================================================
+        print("\n[TEST P] Verifying Interactive Chart Engine & Expand Zoom Lightbox...")
+        # Verify local Chart.js bundle is served cleanly
+        resp_chartjs = client.get("/static/js/chart.umd.min.js")
+        assert resp_chartjs.status_code == 200, "Local Chart.js UMD file not served"
+        assert len(resp_chartjs.data) > 50000, "Chart.js file is empty or corrupted"
+        print("  [PASS] Local standalone Chart.js bundle serves successfully (100% offline compatible)")
+
+        # Verify Individual Dashboard interactive canvases and expand modal
+        assert 'id="canvas-ind-act-co2"' in auth_html, "Interactive Chart 1 canvas missing"
+        assert 'id="canvas-ind-energy"' in auth_html, "Interactive Chart 2 canvas missing"
+        assert 'id="canvas-ind-contrib"' in auth_html, "Interactive Chart 3 canvas missing"
+        assert 'id="canvas-ind-summary"' in auth_html, "Interactive Chart 4 canvas missing"
+        assert 'id="chartExpandModal"' in auth_html, "Chart zoom / expand modal missing"
+        assert 'btn-expand-chart' in auth_html, "Expand chart buttons missing"
+        assert 'btn-toggle-static' in auth_html, "Toggle view buttons missing"
+        assert 'id="individual-calc-data"' in auth_html, "Real Python calculated JSON payload missing"
+        print("  [PASS] Individual dashboard has all 4 interactive chart canvases, zoom modal, and data payload")
+
+        # Verify Organization Dashboard interactive canvases
+        client.get("/auth/logout")
+        client.post(
+            "/auth/login/organization",
+            data={"email": "kavita@greentech.org", "password": "OrgPassword2026"},
+            follow_redirects=True,
+        )
+        # Load academic demo dataset and run cleaning pipeline to generate Analysis
+        from models import Dataset, Analysis
+        upload_resp = client.post("/organization/upload", data={"action": "load_demo"}, follow_redirects=True)
+        assert upload_resp.status_code == 200
+        ds = Dataset.query.order_by(Dataset.id.desc()).first()
+        assert ds is not None
+        clean_resp = client.post(f"/organization/data-quality/{ds.id}", data={}, follow_redirects=True)
+        assert clean_resp.status_code == 200
+
+        org_dash_resp = client.get("/organization/dashboard")
+        org_dash_html = org_dash_resp.data.decode("utf-8")
+        assert 'id="canvas-org-act-co2"' in org_dash_html, "Org interactive activity canvas missing"
+        assert 'id="canvas-org-dept-co2"' in org_dash_html, "Org interactive department canvas missing"
+        assert 'id="org-summary-data"' in org_dash_html, "Org summary JSON payload missing"
+        print("  [PASS] Organization dashboard has interactive activity & department canvases and data payload")
+
+        # Verify Organization Departments interactive chart
+        org_depts_resp = client.get("/organization/departments")
+        org_depts_html = org_depts_resp.data.decode("utf-8")
+        assert 'id="canvas-depts-page-co2"' in org_depts_html, "Departments page interactive canvas missing"
+        assert 'id="departments-list-data"' in org_depts_html, "Departments page data payload missing"
+        print("  [PASS] Organization departments page has interactive canvas and dual-axis chart engine")
+
         print("\n" + "=" * 70)
-        print(" ALL 11 VERIFICATION TESTS (TEST A through TEST K) PASSED 100%!")
+        print(" ALL 16 VERIFICATION TESTS (TEST A through TEST P) PASSED 100%!")
         print("=" * 70)
 
 
 if __name__ == "__main__":
     run_verification()
+

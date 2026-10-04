@@ -133,6 +133,7 @@ def register():
             session.clear()
             session["user_id"] = new_user.id
             session["user_name"] = new_user.name
+            session["user_email"] = new_user.email
             session["account_type"] = new_user.account_type
             session["org_id"] = new_org.id
             session["org_name"] = new_org.name
@@ -153,6 +154,7 @@ def register():
             session.clear()
             session["user_id"] = new_user.id
             session["user_name"] = new_user.name
+            session["user_email"] = new_user.email
             session["account_type"] = new_user.account_type
 
             flash(f"Welcome, {new_user.name}! Your account has been created.", "success")
@@ -180,6 +182,7 @@ def login():
         session.clear()
         session["user_id"] = user.id
         session["user_name"] = user.name
+        session["user_email"] = user.email
         session["account_type"] = user.account_type
 
         if user.is_organization() and user.organization:
@@ -217,6 +220,7 @@ def login_individual():
         session.clear()
         session["user_id"] = user.id
         session["user_name"] = user.name
+        session["user_email"] = user.email
         session["account_type"] = user.account_type
 
         flash(f"Signed in as {user.name}.", "success")
@@ -247,6 +251,7 @@ def login_organization():
         session.clear()
         session["user_id"] = user.id
         session["user_name"] = user.name
+        session["user_email"] = user.email
         session["account_type"] = user.account_type
 
         if user.organization:

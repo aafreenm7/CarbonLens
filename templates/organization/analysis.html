@@ -92,46 +92,86 @@
 
 <!-- Statistical Visualizations (Distribution & Correlation) -->
 {% set charts = summary.get('charts', {}) %}
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+<div class="charts-interactive-grid" style="margin-bottom: 2rem;">
     <!-- Distribution Chart -->
-    <div class="panel" style="margin-bottom: 0;">
-        <div class="panel-header">
-            <h3 class="panel-title">Emissions Distribution (KDE)</h3>
-            <span class="badge-factor badge-research">SEABORN HISTPLOT</span>
+    <div class="panel chart-panel-card" style="margin-bottom: 0;">
+        <div class="chart-card-header">
+            <div>
+                <h3 class="panel-title" style="font-size: 1.05rem;">Emissions Distribution (KDE)</h3>
+                <span class="badge-factor badge-research">SEABORN HISTPLOT</span>
+            </div>
+            {% if charts.get('distribution') %}
+            <div class="chart-action-buttons">
+                <button type="button" class="btn-chart-action btn-expand-image" data-img-src="{{ url_for('static', filename='generated_charts/' + charts.get('distribution')) }}" data-chart-title="Empirical Carbon Emissions Distribution &amp; KDE" title="Enlarge & Zoom this chart">
+                    ⛶ Expand
+                </button>
+            </div>
+            {% endif %}
         </div>
         {% if charts.get('distribution') %}
-            <img src="{{ url_for('static', filename='generated_charts/' + charts.get('distribution')) }}" alt="Emissions Distribution" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+            <div style="text-align: center; padding: 0.5rem 0;">
+                <img src="{{ url_for('static', filename='generated_charts/' + charts.get('distribution')) }}" alt="Emissions Distribution" class="chart-img-static" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+            </div>
         {% else %}
             <div style="text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 0.85rem;">
                 Insufficient observations for density estimation.
             </div>
         {% endif %}
+        <p class="chart-card-caption">
+            Density distribution of calculated daily emissions showing frequency peaks, skewness, and median concentration.
+        </p>
     </div>
 
     <!-- Correlation Heatmap -->
-    <div class="panel" style="margin-bottom: 0;">
-        <div class="panel-header">
-            <h3 class="panel-title">Activity Correlation Matrix</h3>
-            <span class="badge-factor badge-research">SEABORN HEATMAP</span>
+    <div class="panel chart-panel-card" style="margin-bottom: 0;">
+        <div class="chart-card-header">
+            <div>
+                <h3 class="panel-title" style="font-size: 1.05rem;">Activity Correlation Matrix</h3>
+                <span class="badge-factor badge-research">SEABORN HEATMAP</span>
+            </div>
+            {% if charts.get('correlation') %}
+            <div class="chart-action-buttons">
+                <button type="button" class="btn-chart-action btn-expand-image" data-img-src="{{ url_for('static', filename='generated_charts/' + charts.get('correlation')) }}" data-chart-title="Inter-Activity Pearson Correlation Matrix" title="Enlarge & Zoom this chart">
+                    ⛶ Expand
+                </button>
+            </div>
+            {% endif %}
         </div>
         {% if charts.get('correlation') %}
-            <img src="{{ url_for('static', filename='generated_charts/' + charts.get('correlation')) }}" alt="Correlation Heatmap" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+            <div style="text-align: center; padding: 0.5rem 0;">
+                <img src="{{ url_for('static', filename='generated_charts/' + charts.get('correlation')) }}" alt="Correlation Heatmap" class="chart-img-static" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+            </div>
         {% else %}
             <div style="text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 0.85rem;">
                 Insufficient observations or variation for meaningful correlation analysis.
             </div>
         {% endif %}
+        <p class="chart-card-caption">
+            Pearson correlation coefficients highlighting pairwise relationships across activity variables.
+        </p>
     </div>
 </div>
 
 <!-- Inter-Departmental Distribution Boxplot -->
 {% if charts.get('dept_comparison') %}
-    <div class="panel">
-        <div class="panel-header">
-            <h3 class="panel-title">Inter-Departmental Emission Variance (Boxplot)</h3>
-            <span class="badge-factor badge-research">SEABORN BOXPLOT</span>
+    <div class="panel chart-panel-card" style="margin-bottom: 2rem;">
+        <div class="chart-card-header">
+            <div>
+                <h3 class="panel-title" style="font-size: 1.05rem;">Inter-Departmental Emission Variance (Boxplot)</h3>
+                <span class="badge-factor badge-research">SEABORN BOXPLOT</span>
+            </div>
+            <div class="chart-action-buttons">
+                <button type="button" class="btn-chart-action btn-expand-image" data-img-src="{{ url_for('static', filename='generated_charts/' + charts.get('dept_comparison')) }}" data-chart-title="Inter-Departmental Emission Variance &amp; IQR Boxplot" title="Enlarge & Zoom this chart">
+                    ⛶ Expand
+                </button>
+            </div>
         </div>
-        <img src="{{ url_for('static', filename='generated_charts/' + charts.get('dept_comparison')) }}" alt="Department Comparison Boxplot" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+        <div style="text-align: center; padding: 0.5rem 0;">
+            <img src="{{ url_for('static', filename='generated_charts/' + charts.get('dept_comparison')) }}" alt="Department Comparison Boxplot" class="chart-img-static" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+        </div>
+        <p class="chart-card-caption">
+            Quartiles, medians, and outlier points per department comparing workload dispersion.
+        </p>
     </div>
 {% endif %}
 

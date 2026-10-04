@@ -16,14 +16,42 @@
 </div>
 
 {% set charts = summary.get('charts', {}) %}
-{% if charts.get('department_co2') %}
-    <div class="panel">
-        <div class="panel-header">
-            <h2 class="panel-title">Comparative Department Emissions (kg CO₂e)</h2>
-            <span class="badge-factor badge-research">PYTHON / SEABORN</span>
+{% if charts.get('department_co2') or departments %}
+    <div class="panel chart-panel-card" style="margin-bottom: 2rem;">
+        <div class="chart-card-header">
+            <div>
+                <h2 class="panel-title" style="font-size: 1.15rem;">Comparative Department Emissions</h2>
+                <span class="badge badge-success">kg CO₂e</span>
+            </div>
+            <div class="chart-action-buttons">
+                <button type="button" class="btn-chart-action btn-expand-chart" data-chart-target="depts-page-co2" data-chart-title="Departmental Comparative Emissions & Intensity (kg CO₂e)" title="Enlarge & Zoom this chart">
+                    ⛶ Expand
+                </button>
+                <button type="button" class="btn-chart-action btn-toggle-static" data-toggle-target="depts-page-co2" title="Switch between Interactive and Publication static view">
+                    📊 Toggle View
+                </button>
+            </div>
         </div>
-        <img src="{{ url_for('static', filename='generated_charts/' + charts.get('department_co2')) }}" alt="Department Emissions Chart" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
+
+        <div class="chart-interactive-wrap" id="wrap-interactive-depts-page-co2" style="min-height: 380px;">
+            <canvas id="canvas-depts-page-co2" class="interactive-chart-canvas"></canvas>
+        </div>
+
+        <div class="chart-static-wrap" id="wrap-static-depts-page-co2" style="display: none;">
+            {% if charts.get('department_co2') %}
+                <img src="{{ url_for('static', filename='generated_charts/' + charts.get('department_co2')) }}" alt="Department Emissions Chart" class="chart-img-static">
+            {% endif %}
+        </div>
+
+        <p class="chart-card-caption">
+            Division-by-division digital carbon load. Hover over bars to view employee headcounts, per-employee intensity, and percentage of company footprint.
+        </p>
     </div>
+
+    <!-- Real Department Performance Data Payload -->
+    <script id="departments-list-data" type="application/json">
+    {{ departments|tojson }}
+    </script>
 {% endif %}
 
 <div class="panel">

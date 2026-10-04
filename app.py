@@ -155,6 +155,7 @@ def create_app(config_name=None):
             )
 
         charts = {}
+        calc_dict = {}
         if calc:
             calc_dict = calc.get_breakdown() or {}
             calc_dict["daily_co2e_g"] = calc.daily_co2e
@@ -166,7 +167,7 @@ def create_app(config_name=None):
                 calc.id, calc_dict, app.config["CHARTS_FOLDER"]
             )
 
-        return render_template("individual/dashboard.html", calc=calc, charts=charts)
+        return render_template("individual/dashboard.html", calc=calc, charts=charts, calc_dict=calc_dict)
 
     @app.route("/individual/calculator", methods=["GET", "POST"])
     @individual_required

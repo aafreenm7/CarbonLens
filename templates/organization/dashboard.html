@@ -67,31 +67,78 @@
 
     <!-- Analytical Visualizations Grid -->
     {% set charts = summary.get('charts', {}) %}
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
-        <div class="panel" style="margin-bottom: 0;">
-            <div class="panel-header">
-                <h3 class="panel-title">Emissions by Activity</h3>
-                <span class="badge-factor badge-research">PYTHON / SEABORN</span>
+    <div class="charts-interactive-grid" style="margin-bottom: 2rem;">
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Emissions by Activity</h3>
+                    <span class="badge badge-success">kg CO₂e</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-chart" data-chart-target="org-act-co2" data-chart-title="Organization Emissions by Activity Category (kg CO₂e)" title="Enlarge & Zoom this chart">
+                        ⛶ Expand
+                    </button>
+                    <button type="button" class="btn-chart-action btn-toggle-static" data-toggle-target="org-act-co2" title="Switch between Interactive and Publication static view">
+                        📊 Toggle View
+                    </button>
+                </div>
             </div>
-            {% if charts.get('activity_co2') %}
-                <img src="{{ url_for('static', filename='generated_charts/' + charts.get('activity_co2')) }}" alt="Emissions by Activity" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
-            {% else %}
-                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Chart rendering pending...</div>
-            {% endif %}
+
+            <div class="chart-interactive-wrap" id="wrap-interactive-org-act-co2">
+                <canvas id="canvas-org-act-co2" class="interactive-chart-canvas"></canvas>
+            </div>
+
+            <div class="chart-static-wrap" id="wrap-static-org-act-co2" style="display: none;">
+                {% if charts.get('activity_co2') %}
+                    <img src="{{ url_for('static', filename='generated_charts/' + charts.get('activity_co2')) }}" alt="Emissions by Activity" class="chart-img-static">
+                {% else %}
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Chart rendering pending...</div>
+                {% endif %}
+            </div>
+
+            <p class="chart-card-caption">
+                Aggregate carbon emissions across digital operational categories. Hover over columns to inspect precise weight and contribution percentage.
+            </p>
         </div>
 
-        <div class="panel" style="margin-bottom: 0;">
-            <div class="panel-header">
-                <h3 class="panel-title">Emissions by Department</h3>
-                <span class="badge-factor badge-research">PYTHON / SEABORN</span>
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Emissions by Department</h3>
+                    <span class="badge badge-success">kg CO₂e</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-chart" data-chart-target="org-dept-co2" data-chart-title="Departmental Carbon Footprint Ranking (kg CO₂e)" title="Enlarge & Zoom this chart">
+                        ⛶ Expand
+                    </button>
+                    <button type="button" class="btn-chart-action btn-toggle-static" data-toggle-target="org-dept-co2" title="Switch between Interactive and Publication static view">
+                        📊 Toggle View
+                    </button>
+                </div>
             </div>
-            {% if charts.get('department_co2') %}
-                <img src="{{ url_for('static', filename='generated_charts/' + charts.get('department_co2')) }}" alt="Emissions by Department" style="width: 100%; height: auto; border-radius: var(--radius-sm);">
-            {% else %}
-                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Chart rendering pending...</div>
-            {% endif %}
+
+            <div class="chart-interactive-wrap" id="wrap-interactive-org-dept-co2">
+                <canvas id="canvas-org-dept-co2" class="interactive-chart-canvas"></canvas>
+            </div>
+
+            <div class="chart-static-wrap" id="wrap-static-org-dept-co2" style="display: none;">
+                {% if charts.get('department_co2') %}
+                    <img src="{{ url_for('static', filename='generated_charts/' + charts.get('department_co2')) }}" alt="Emissions by Department" class="chart-img-static">
+                {% else %}
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">Chart rendering pending...</div>
+                {% endif %}
+            </div>
+
+            <p class="chart-card-caption">
+                Comparative emissions profile across organizational divisions. Hover over bars to view monitored headcounts and mean per-employee impact.
+            </p>
         </div>
     </div>
+
+    <!-- Real Python Calculated Organization Summary Payload -->
+    <script id="org-summary-data" type="application/json">
+    {{ summary|tojson }}
+    </script>
 
     <!-- Department Summary Table & Quick Actions -->
     <div class="panel">

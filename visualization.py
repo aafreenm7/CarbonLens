@@ -27,7 +27,7 @@ STYLE_CONFIG = {
     "grid.linestyle": "--",
     "grid.alpha": 0.7,
     "font.family": "sans-serif",
-    "font.size": 10,
+    "font.size": 10.5,
 }
 
 FOREST_GREEN = "#1B4332"
