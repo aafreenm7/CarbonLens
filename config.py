@@ -6,6 +6,16 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
+# Detect Vercel / serverless environment
+IS_VERCEL = bool(
+    os.environ.get("VERCEL")
+    or os.environ.get("VERCEL_ENV")
+    or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+)
+
+# Runtime writable directory: /tmp on Vercel/serverless, BASE_DIR for local development
+RUNTIME_DIR = Path("/tmp") if IS_VERCEL else BASE_DIR
+
 
 class Config:
     """Base configuration for CarbonLens."""
@@ -15,9 +25,8 @@ class Config:
     )
 
     # Database: Default to local SQLite, easily switchable to PostgreSQL via DATABASE_URL
-    _db_url = os.environ.get(
-        "DATABASE_URL", f"sqlite:///{BASE_DIR / 'instance' / 'carbonlens.db'}"
-    )
+    _default_db = RUNTIME_DIR / "instance" / "carbonlens.db"
+    _db_url = os.environ.get("DATABASE_URL", f"sqlite:///{_default_db}")
     # Compatibility fix for Supabase / Heroku postgres:// prefix
     if _db_url.startswith("postgres://"):
         _db_url = _db_url.replace("postgres://", "postgresql://", 1)
@@ -33,9 +42,15 @@ class Config:
     MAX_CONTENT_LENGTH = int(
         os.environ.get("MAX_CONTENT_LENGTH_MB", 16)
     ) * 1024 * 1024  # 16 MB limit
-    UPLOAD_FOLDER = BASE_DIR / "uploads"
-    EXPORTS_FOLDER = BASE_DIR / "exports"
-    CHARTS_FOLDER = BASE_DIR / "static" / "generated_charts"
+
+    INSTANCE_FOLDER = RUNTIME_DIR / "instance"
+    UPLOAD_FOLDER = RUNTIME_DIR / "uploads"
+    EXPORTS_FOLDER = RUNTIME_DIR / "exports"
+    CHARTS_FOLDER = (
+        RUNTIME_DIR / "generated_charts"
+        if IS_VERCEL
+        else BASE_DIR / "static" / "generated_charts"
+    )
     DATA_FOLDER = BASE_DIR / "data"
 
     ALLOWED_EXTENSIONS = {"csv", "xlsx", "xls"}

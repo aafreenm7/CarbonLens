@@ -10,6 +10,7 @@ from app import create_app
 
 env_mode = os.environ.get("FLASK_ENV", "production")
 application = create_app(env_mode)
+app = application
 
 if __name__ == "__main__":
     application.run()

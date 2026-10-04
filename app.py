@@ -19,6 +19,7 @@ from flask import (
     flash,
     session,
     send_file,
+    send_from_directory,
     jsonify,
     abort,
 )
@@ -51,15 +52,18 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config_by_name.get(config_name, config_by_name["default"]))
 
-    # Ensure required directories exist
-    for folder in [
+    # Ensure writable runtime directories exist
+    runtime_folders = [
         app.config["UPLOAD_FOLDER"],
         app.config["EXPORTS_FOLDER"],
         app.config["CHARTS_FOLDER"],
-        app.config["DATA_FOLDER"],
-        BASE_DIR / "instance",
-    ]:
-        folder.mkdir(parents=True, exist_ok=True)
+        app.config.get("INSTANCE_FOLDER", BASE_DIR / "instance"),
+    ]
+    for folder in runtime_folders:
+        try:
+            folder.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
 
     # Initialize extensions
     db.init_app(app)
@@ -136,6 +140,16 @@ def create_app(config_name=None):
             "database": db_status,
             "version": "1.0.0",
         }), 200
+
+    @app.route("/static/generated_charts/<path:filename>")
+    def serve_generated_chart(filename):
+        chart_dir = Path(app.config["CHARTS_FOLDER"])
+        if (chart_dir / filename).exists():
+            return send_from_directory(chart_dir, filename)
+        repo_chart_dir = BASE_DIR / "static" / "generated_charts"
+        if (repo_chart_dir / filename).exists():
+            return send_from_directory(repo_chart_dir, filename)
+        abort(404)
 
     # ---------------------------------------------------------------------
     # Individual User Routes
@@ -746,10 +760,12 @@ def create_app(config_name=None):
     return app
 
 
+# Top-level WSGI application instance for Vercel and serverless environments
+app = create_app()
+
 if __name__ == "__main__":
-    application = create_app("development")
     print("=================================================================")
     print(" CarbonLens — Digital Carbon Footprint Analytics Platform")
     print(" Local development server running at: http://127.0.0.1:5000")
     print("=================================================================")
-    application.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True)
