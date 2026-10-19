@@ -26,6 +26,7 @@
                             <li><a href="{{ url_for('organization_dashboard') }}" class="{{ 'active' if request.endpoint == 'organization_dashboard' else '' }}">Dashboard</a></li>
                             <li><a href="{{ url_for('organization_upload') }}" class="{{ 'active' if request.endpoint == 'organization_upload' else '' }}">Upload</a></li>
                             <li><a href="{{ url_for('organization_analysis') }}" class="{{ 'active' if request.endpoint == 'organization_analysis' else '' }}">Analysis</a></li>
+                            <li><a href="{{ url_for('eda.eda_index') }}" class="{{ 'active' if request.endpoint and 'eda' in request.endpoint else '' }}">Analytics / EDA</a></li>
                             <li><a href="{{ url_for('organization_departments') }}" class="{{ 'active' if request.endpoint == 'organization_departments' else '' }}">Departments</a></li>
                             <li><a href="{{ url_for('organization_insights') }}" class="{{ 'active' if request.endpoint == 'organization_insights' else '' }}">Insights</a></li>
                             <li><a href="{{ url_for('organization_what_if') }}" class="{{ 'active' if request.endpoint == 'organization_what_if' else '' }}">What-If</a></li>
@@ -33,12 +34,14 @@
                         {% elif session.get('account_type') == 'INDIVIDUAL' %}
                             <li><a href="{{ url_for('individual_dashboard') }}" class="{{ 'active' if request.endpoint == 'individual_dashboard' else '' }}">Dashboard</a></li>
                             <li><a href="{{ url_for('individual_calculator') }}" class="{{ 'active' if request.endpoint == 'individual_calculator' else '' }}">Calculator</a></li>
+                            <li><a href="{{ url_for('eda.eda_index') }}" class="{{ 'active' if request.endpoint and 'eda' in request.endpoint else '' }}">Analytics / EDA</a></li>
                             <li><a href="{{ url_for('individual_history') }}" class="{{ 'active' if request.endpoint == 'individual_history' else '' }}">History</a></li>
                             <li><a href="{{ url_for('individual_insights') }}" class="{{ 'active' if request.endpoint == 'individual_insights' else '' }}">Insights</a></li>
                         {% endif %}
                         <li><a href="{{ url_for('sources') }}" class="{{ 'active' if request.endpoint == 'sources' else '' }}">Sources</a></li>
                     {% else %}
                         <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Home</a></li>
+                        <li><a href="{{ url_for('eda.eda_index') }}" class="{{ 'active' if request.endpoint and 'eda' in request.endpoint else '' }}">Analytics / EDA</a></li>
                         <li><a href="{{ url_for('sources') }}" class="{{ 'active' if request.endpoint == 'sources' else '' }}">Sources</a></li>
                     {% endif %}
                 </ul>
@@ -91,12 +94,11 @@
                                             Personal Dashboard
                                         </a>
                                     {% endif %}
-                                    <a href="{{ url_for('auth.logout') }}" class="dropdown-link-item link-logout">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: -2px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                                        Sign Out
-                                    </a>
                                 </div>
                             </div>
+                        </li>
+                        <li class="nav-item-signout">
+                            <a href="{{ url_for('auth.logout') }}" class="nav-signout-btn" id="headerSignOutBtn" title="Sign Out">Sign Out</a>
                         </li>
                     {% else %}
                         <!-- Unauthenticated Top-Right Sign In & Registration Area -->

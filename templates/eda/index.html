@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics & Exploratory Data Analysis (EDA) — CarbonLens{% endblock %}
+
+{% block extra_head %}
+<!-- Plotly.js CDN Engine (Zero Server Disk Writes) -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<!-- Bokeh JS CDN Engine (Zero Server Disk Writes) -->
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.10.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.10.1.min.js" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.25rem;">
+            <h1 class="page-title" style="margin: 0;">Analytics &amp; EDA Studio</h1>
+            <span class="brand-tag" style="background-color: var(--bg-mint); color: var(--color-forest); border-color: var(--border-pastel); font-weight: 700;">
+                DATA SCIENCE SYLLABUS
+            </span>
+        </div>
+        <p class="page-subtitle" style="margin: 0;">
+            Integrated statistical exploration, multi-engine publication charts, interactive Plotly &amp; Bokeh, and advanced machine learning models.
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+        <!-- Theme & Color Palette Switcher -->
+        <form method="GET" action="{{ url_for('eda.eda_index') }}" style="display: flex; align-items: center; gap: 0.4rem;">
+            <label for="paletteSelect" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Theme Palette:</label>
+            <select name="palette" id="paletteSelect" class="form-select" style="padding: 0.35rem 0.6rem; font-size: 0.825rem; width: auto;" onchange="this.form.submit()">
+                {% for pal in available_palettes %}
+                    <option value="{{ pal }}" {% if pal == selected_palette %}selected{% endif %}>{{ pal|capitalize }}</option>
+                {% endfor %}
+            </select>
+            <!-- Preserve other query parameters -->
+            <input type="hidden" name="line_x" value="{{ line_x }}">
+            <input type="hidden" name="line_y" value="{{ line_y }}">
+            <input type="hidden" name="bar_cat" value="{{ bar_cat }}">
+            <input type="hidden" name="bar_num" value="{{ bar_num }}">
+            <input type="hidden" name="hist_col" value="{{ hist_col }}">
+            <input type="hidden" name="scatter_x" value="{{ scatter_x }}">
+            <input type="hidden" name="scatter_y" value="{{ scatter_y }}">
+            <input type="hidden" name="scatter_hue" value="{{ scatter_hue }}">
+            <input type="hidden" name="box_cat" value="{{ box_cat }}">
+            <input type="hidden" name="box_num" value="{{ box_num }}">
+            <input type="hidden" name="pie_cat" value="{{ pie_cat }}">
+        </form>
+
+        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('uploadCsvModal').style.display='flex'">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right: 4px; vertical-align: -2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Upload Custom CSV
+        </button>
+
+        {% if is_custom %}
+            <form method="POST" action="{{ url_for('eda.eda_reset') }}" style="display: inline;">
+                <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--status-warning) !important;">
+                    Reset to Iris Dataset
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Active Dataset Information Banner -->
+<div class="panel" style="background-color: var(--bg-mint); border: 1px solid var(--border-pastel); margin-bottom: 2rem; padding: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--color-sage); letter-spacing: 0.05em;">
+                ACTIVE ANALYTICAL DATASET
+            </div>
+            <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--color-forest); margin-top: 2px;">
+                {{ dataset_name }}
+            </h2>
+            <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 3px;">
+                Dimensions: <strong class="mono-cell" style="color: var(--color-forest);">{{ shape[0] }} rows &times; {{ shape[1] }} columns</strong>
+                &bull; Missing values: <strong class="mono-cell">{{ preview_rows|length > 0 and (col_summary|sum(attribute='missing')) }}</strong>
+                &bull; In-memory execution: <span class="badge badge-success" style="vertical-align: 1px;">Zero Disk Writes</span>
+            </div>
+        </div>
+
+        <div>
+            <span class="badge-factor {% if is_custom %}badge-assumption{% else %}badge-research{% endif %}" style="font-size: 0.8rem; padding: 4px 8px;">
+                {{ 'CUSTOM USER UPLOAD' if is_custom else 'BUILT-IN BENCHMARK (IRIS)' }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Section 1: Dataset Exploration (Preview, dtypes, describe, missing) -->
+<div class="panel" style="margin-bottom: 2.25rem;">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">1. Dataset Exploration &amp; Inspection</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Preview table, data types, missing value audit, and summary statistics (Pandas describe())</span>
+        </div>
+        <span class="badge-factor badge-research">PANDAS INSPECTION</span>
+    </div>
+
+    <!-- Column Dtypes and Missing values pill grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
+        {% for col in col_summary %}
+            <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem;">
+                <div style="font-weight: 600; font-size: 0.85rem; color: var(--color-forest);"><code>{{ col.name }}</code></div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.775rem; color: var(--text-muted); margin-top: 4px;">
+                    <span>Type: <strong class="mono-cell">{{ col.dtype }}</strong></span>
+                    <span>Missing: <strong class="mono-cell" style="color: {{ 'var(--status-danger)' if col.missing > 0 else 'var(--color-sage)' }};">{{ col.missing }}</strong></span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Data Preview Table (First 10 rows) -->
+    <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-forest); margin-bottom: 0.5rem;">
+        Dataset Preview (First 10 Rows)
+    </h3>
+    <div class="table-responsive" style="margin-bottom: 1.5rem; max-height: 280px;">
+        <table class="table-custom" style="font-size: 0.825rem;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    {% if preview_rows|length > 0 %}
+                        {% for k in preview_rows[0].keys() %}
+                            <th>{{ k }}</th>
+                        {% endfor %}
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in preview_rows %}
+                    <tr>
+                        <td class="mono-cell" style="color: var(--text-light);">{{ loop.index }}</td>
+                        {% for val in row.values() %}
+                            <td class="mono-cell">
+                                {% if val is number %}
+                                    {{ "%.2f"|format(val) if val is float else val }}
+                                {% else %}
+                                    {{ val }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Summary Statistics describe() Table -->
+    {% if describe_dict %}
+        <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--color-forest); margin-bottom: 0.5rem;">
+            Descriptive Statistics (Pandas DataFrame describe())
+        </h3>
+        <div class="table-responsive">
+            <table class="table-custom" style="font-size: 0.825rem;">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        {% for col in describe_dict.keys() %}
+                            <th><code>{{ col }}</code></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set stat_labels = ['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max'] %}
+                    {% for stat in stat_labels %}
+                        <tr>
+                            <td><strong>{{ stat|upper }}</strong></td>
+                            {% for col, stats in describe_dict.items() %}
+                                <td class="mono-cell">
+                                    {% if stat in stats %}
+                                        {{ "%.3f"|format(stats[stat]) if stat != 'count' else stats[stat]|int }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Section 2: Matplotlib & Seaborn Chart Suite (6 Chart Types) -->
+<div class="panel" style="margin-bottom: 2.25rem;">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">2. Matplotlib &amp; Seaborn Chart Suite</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">
+                Six core chart types rendered in memory using headless Agg backend and dynamic '{{ selected_palette }}' theme palette.
+            </span>
+        </div>
+        <span class="badge-factor badge-research">MATPLOTLIB &amp; SEABORN</span>
+    </div>
+
+    <div class="charts-interactive-grid">
+        <!-- 1. Line Plot -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Line Plot (Trend &amp; Progression)</h3>
+                    <span class="badge-factor badge-research">MATPLOTLIB LINE</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ line_b64 }}" data-chart-title="Line Plot: {{ line_y }} vs {{ line_x }}">
+                        ⛶ Expand
+                    </button>
+                </div>
+            </div>
+            <!-- Dynamic Controls Form -->
+            <form method="GET" action="{{ url_for('eda.eda_index') }}" style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                <input type="hidden" name="palette" value="{{ selected_palette }}">
+                <select name="line_x" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in num_cols %}<option value="{{ c }}" {% if c == line_x %}selected{% endif %}>X: {{ c }}</option>{% endfor %}
+                </select>
+                <select name="line_y" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in num_cols %}<option value="{{ c }}" {% if c == line_y %}selected{% endif %}>Y: {{ c }}</option>{% endfor %}
+                </select>
+            </form>
+            <div class="chart-static-wrap">
+                <img src="data:image/png;base64,{{ line_b64 }}" alt="Line Plot" class="chart-img-static" style="width: 100%;">
+            </div>
+            <div class="chart-card-caption">
+                <strong>Data-Driven Interpretation:</strong> {{ line_interp }}
+            </div>
+        </div>
+
+        <!-- 2. Bar Chart -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Bar Chart (Aggregated Means)</h3>
+                    <span class="badge-factor badge-research">MATPLOTLIB BAR</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ bar_b64 }}" data-chart-title="Bar Chart: Mean {{ bar_num }} by {{ bar_cat }}">
+                        ⛶ Expand
+                    </button>
+                </div>
+            </div>
+            <!-- Dynamic Controls Form -->
+            <form method="GET" action="{{ url_for('eda.eda_index') }}" style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                <input type="hidden" name="palette" value="{{ selected_palette }}">
+                <select name="bar_cat" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in cat_cols %}<option value="{{ c }}" {% if c == bar_cat %}selected{% endif %}>Cat: {{ c }}</option>{% endfor %}
+                </select>
+                <select name="bar_num" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in num_cols %}<option value="{{ c }}" {% if c == bar_num %}selected{% endif %}>Val: {{ c }}</option>{% endfor %}
+                </select>
+            </form>
+            <div class="chart-static-wrap">
+                <img src="data:image/png;base64,{{ bar_b64 }}" alt="Bar Chart" class="chart-img-static" style="width: 100%;">
+            </div>
+            <div class="chart-card-caption">
+                <strong>Data-Driven Interpretation:</strong> {{ bar_interp }}
+            </div>
+        </div>
+
+        <!-- 3. Histogram -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Histogram &amp; KDE Distribution</h3>
+                    <span class="badge-factor badge-research">SEABORN HISTPLOT</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ hist_b64 }}" data-chart-title="Histogram: {{ hist_col }}">
+                        ⛶ Expand
+                    </button>
+                </div>
+            </div>
+            <form method="GET" action="{{ url_for('eda.eda_index') }}" style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                <input type="hidden" name="palette" value="{{ selected_palette }}">
+                <select name="hist_col" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in num_cols %}<option value="{{ c }}" {% if c == hist_col %}selected{% endif %}>Feature: {{ c }}</option>{% endfor %}
+                </select>
+            </form>
+            <div class="chart-static-wrap">
+                <img src="data:image/png;base64,{{ hist_b64 }}" alt="Histogram" class="chart-img-static" style="width: 100%;">
+            </div>
+            <div class="chart-card-caption">
+                <strong>Data-Driven Interpretation:</strong> {{ hist_interp }}
+            </div>
+        </div>
+
+        <!-- 4. Scatter Plot -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Scatter Plot (Bivariate Relationship)</h3>
+                    <span class="badge-factor badge-research">SEABORN SCATTER</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ scatter_b64 }}" data-chart-title="Scatter: {{ scatter_y }} vs {{ scatter_x }}">
+                        ⛶ Expand
+                    </button>
+                </div>
+            </div>
+            <form method="GET" action="{{ url_for('eda.eda_index') }}" style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                <input type="hidden" name="palette" value="{{ selected_palette }}">
+                <select name="scatter_x" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in num_cols %}<option value="{{ c }}" {% if c == scatter_x %}selected{% endif %}>X: {{ c }}</option>{% endfor %}
+                </select>
+                <select name="scatter_y" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in num_cols %}<option value="{{ c }}" {% if c == scatter_y %}selected{% endif %}>Y: {{ c }}</option>{% endfor %}
+                </select>
+                <select name="scatter_hue" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    <option value="">Hue: None</option>
+                    {% for c in cat_cols %}<option value="{{ c }}" {% if c == scatter_hue %}selected{% endif %}>Hue: {{ c }}</option>{% endfor %}
+                </select>
+            </form>
+            <div class="chart-static-wrap">
+                <img src="data:image/png;base64,{{ scatter_b64 }}" alt="Scatter Plot" class="chart-img-static" style="width: 100%;">
+            </div>
+            <div class="chart-card-caption">
+                <strong>Data-Driven Interpretation:</strong> {{ scatter_interp }}
+            </div>
+        </div>
+
+        <!-- 5. Pie Chart -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Pie Chart (Class Distribution)</h3>
+                    <span class="badge-factor badge-research">MATPLOTLIB PIE</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ pie_b64 }}" data-chart-title="Pie Chart: {{ pie_cat }}">
+                        ⛶ Expand
+                    </button>
+                </div>
+            </div>
+            <form method="GET" action="{{ url_for('eda.eda_index') }}" style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                <input type="hidden" name="palette" value="{{ selected_palette }}">
+                <select name="pie_cat" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in cat_cols %}<option value="{{ c }}" {% if c == pie_cat %}selected{% endif %}>Class: {{ c }}</option>{% endfor %}
+                </select>
+            </form>
+            <div class="chart-static-wrap">
+                <img src="data:image/png;base64,{{ pie_b64 }}" alt="Pie Chart" class="chart-img-static" style="width: 100%;">
+            </div>
+            <div class="chart-card-caption">
+                <strong>Data-Driven Interpretation:</strong> {{ pie_interp }}
+            </div>
+        </div>
+
+        <!-- 6. Box Plot -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Box Plot (Quartile &amp; Outliers)</h3>
+                    <span class="badge-factor badge-research">SEABORN BOXPLOT</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ box_b64 }}" data-chart-title="Boxplot: {{ box_num }} by {{ box_cat }}">
+                        ⛶ Expand
+                    </button>
+                </div>
+            </div>
+            <form method="GET" action="{{ url_for('eda.eda_index') }}" style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap;">
+                <input type="hidden" name="palette" value="{{ selected_palette }}">
+                <select name="box_cat" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in cat_cols %}<option value="{{ c }}" {% if c == box_cat %}selected{% endif %}>Category: {{ c }}</option>{% endfor %}
+                </select>
+                <select name="box_num" class="form-select" style="font-size: 0.775rem; padding: 2px 6px; width: auto;" onchange="this.form.submit()">
+                    {% for c in num_cols %}<option value="{{ c }}" {% if c == box_num %}selected{% endif %}>Measurement: {{ c }}</option>{% endfor %}
+                </select>
+            </form>
+            <div class="chart-static-wrap">
+                <img src="data:image/png;base64,{{ box_b64 }}" alt="Box Plot" class="chart-img-static" style="width: 100%;">
+            </div>
+            <div class="chart-card-caption">
+                <strong>Data-Driven Interpretation:</strong> {{ box_interp }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 3: Interactive Visualizations (Plotly & Bokeh) -->
+<div class="panel" style="margin-bottom: 2.25rem;">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">3. Interactive Visualizations (Plotly &amp; Bokeh)</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">
+                Loaded from CDN without local storage. Includes hover inspection tooltips, box zoom, pan, and coordinate resets.
+            </span>
+        </div>
+        <span class="badge-factor badge-research">INTERACTIVE ENGINES</span>
+    </div>
+
+    <!-- Tab Buttons -->
+    <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+        <button type="button" id="tabPlotlyBtn" class="btn btn-secondary btn-sm" style="border-bottom: 2px solid var(--color-forest); font-weight: 700;" onclick="switchInteractiveTab('plotly')">
+            Interactive Plotly Studio
+        </button>
+        <button type="button" id="tabBokehBtn" class="btn btn-secondary btn-sm" style="border-bottom: 2px solid transparent;" onclick="switchInteractiveTab('bokeh')">
+            Interactive Bokeh Canvas
+        </button>
+    </div>
+
+    <!-- Plotly Container -->
+    <div id="plotlyTabContainer" style="display: block;">
+        <div style="background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; overflow-x: auto;">
+            {{ plotly_div|safe }}
+        </div>
+        <div class="chart-card-caption" style="margin-top: 0.75rem;">
+            <strong>Plotly Features:</strong> Interactive client-side canvas supporting dynamic mouseover tooltips, lasso selection, box zoom, panning across Cartesian coordinates, and automatic axes reset.
+        </div>
+    </div>
+
+    <!-- Bokeh Container -->
+    <div id="bokehTabContainer" style="display: none;">
+        <div style="background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; overflow-x: auto; display: flex; justify-content: center;">
+            {{ bokeh_div|safe }}
+        </div>
+        {{ bokeh_script|safe }}
+        <div class="chart-card-caption" style="margin-top: 0.75rem;">
+            <strong>Bokeh Features:</strong> ColumnDataSource pipeline with integrated HoverTool, wheel zoom, box zoom, and touch-compatible panning tools rendered directly in memory.
+        </div>
+    </div>
+</div>
+
+<!-- Section 4: Statistical EDA (Heatmap & Pair Plot) -->
+<div class="panel" style="margin-bottom: 2.25rem;">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">4. Statistical Exploratory Data Analysis (EDA)</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">
+                Univariate distributions, bivariate relationships, Pearson correlation matrix, and multi-variable pair plot.
+            </span>
+        </div>
+        <span class="badge-factor badge-research">STATISTICAL EDA</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1.75rem;">
+        <!-- Correlation Heatmap -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Pearson Correlation Heatmap</h3>
+                    <span class="badge-factor badge-research">SEABORN HEATMAP</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ heatmap_b64 }}" data-chart-title="Pearson Correlation Heatmap">
+                        ⛶ Expand
+                    </button>
+                </div>
+            </div>
+            <div class="chart-static-wrap">
+                <img src="data:image/png;base64,{{ heatmap_b64 }}" alt="Correlation Heatmap" class="chart-img-static" style="width: 100%;">
+            </div>
+            <div class="chart-card-caption">
+                <strong>Data-Driven Interpretation:</strong> {{ heatmap_interp }}
+            </div>
+        </div>
+
+        <!-- Pair Plot -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Multivariate Pair Plot</h3>
+                    <span class="badge-factor badge-research">SEABORN PAIRPLOT</span>
+                </div>
+                <div class="chart-action-buttons">
+                    <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ pairplot_b64 }}" data-chart-title="Multivariate Pair Plot">
+                        ⛶ Expand
+                    </button>
+                </div>
+            </div>
+            <div class="chart-static-wrap">
+                <img src="data:image/png;base64,{{ pairplot_b64 }}" alt="Pair Plot" class="chart-img-static" style="width: 100%;">
+            </div>
+            <div class="chart-card-caption">
+                <strong>Data-Driven Interpretation:</strong> {{ pairplot_interp }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 5: Advanced Machine Learning & Dimensionality Reduction -->
+<div class="panel" style="margin-bottom: 2rem;">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">5. Advanced Machine Learning &amp; Dimensionality Reduction</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">
+                Random Forest classification with train/test validation, Gini feature importance ranking, and standardized 2D PCA projection.
+            </span>
+        </div>
+        <span class="badge-factor badge-research">SCIKIT-LEARN ML</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1.75rem;">
+        <!-- Random Forest Feature Importance -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Random Forest Feature Importance</h3>
+                    <span class="badge-factor badge-research">TRAIN / TEST SPLIT (75/25)</span>
+                </div>
+                {% if rf_data.get('available') %}
+                    <div class="chart-action-buttons">
+                        <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ rf_data.chart_b64 }}" data-chart-title="Random Forest Feature Importance">
+                            ⛶ Expand
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if rf_data.get('available') %}
+                <div style="background-color: var(--bg-mint); border: 1px solid var(--border-pastel); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; font-size: 0.825rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
+                    <span>Model Holdout Accuracy: <strong class="mono-cell" style="color: var(--color-forest);">{{ rf_data.accuracy }}</strong></span>
+                    <span>Validation Split: <strong class="mono-cell">{{ rf_data.train_samples }} train / {{ rf_data.test_samples }} test</strong></span>
+                </div>
+                <div class="chart-static-wrap">
+                    <img src="data:image/png;base64,{{ rf_data.chart_b64 }}" alt="Random Forest Feature Importance" class="chart-img-static" style="width: 100%;">
+                </div>
+                <div class="chart-card-caption">
+                    <strong>Data-Driven Interpretation:</strong> {{ rf_data.interpretation }}
+                </div>
+            {% else %}
+                <div style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                    {{ rf_data.get('reason', 'Random Forest modeling unavailable.') }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Principal Component Analysis (PCA) -->
+        <div class="panel chart-panel-card" style="margin-bottom: 0;">
+            <div class="chart-card-header">
+                <div>
+                    <h3 class="panel-title" style="font-size: 1.05rem;">Principal Component Analysis (PCA)</h3>
+                    <span class="badge-factor badge-research">STANDARDIZED PROJECTION</span>
+                </div>
+                {% if pca_data.get('available') %}
+                    <div class="chart-action-buttons">
+                        <button type="button" class="btn-chart-action btn-expand-image" data-img-src="data:image/png;base64,{{ pca_data.chart_b64 }}" data-chart-title="PCA 2D Dimensionality Projection">
+                            ⛶ Expand
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if pca_data.get('available') %}
+                <div style="background-color: var(--bg-mint); border: 1px solid var(--border-pastel); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; font-size: 0.825rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
+                    <span>PC1 Variance: <strong class="mono-cell" style="color: var(--color-forest);">{{ pca_data.ev1 }}</strong></span>
+                    <span>PC2 Variance: <strong class="mono-cell" style="color: var(--color-forest);">{{ pca_data.ev2 }}</strong></span>
+                    <span>Cumulative 2D: <strong class="mono-cell" style="color: var(--color-forest);">{{ pca_data.total_ev }}</strong></span>
+                </div>
+                <div class="chart-static-wrap">
+                    <img src="data:image/png;base64,{{ pca_data.chart_b64 }}" alt="PCA 2D Projection" class="chart-img-static" style="width: 100%;">
+                </div>
+                <div class="chart-card-caption">
+                    <strong>Data-Driven Interpretation:</strong> {{ pca_data.interpretation }}
+                </div>
+            {% else %}
+                <div style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                    {{ pca_data.get('reason', 'PCA dimensionality projection unavailable.') }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Upload Custom CSV Modal (Zero Disk Writes) -->
+<div id="uploadCsvModal" class="chart-modal-backdrop" style="display: none;" role="dialog" aria-modal="true">
+    <div class="chart-modal-dialog" style="max-width: 580px;">
+        <div class="chart-modal-header">
+            <div>
+                <h3 class="chart-modal-title">Upload Custom CSV Dataset</h3>
+                <span class="chart-modal-subtitle">Parsed entirely in-memory with strict validation checks</span>
+            </div>
+            <button type="button" class="chart-modal-close" onclick="document.getElementById('uploadCsvModal').style.display='none'">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('eda.eda_upload') }}" enctype="multipart/form-data" style="padding: 1.5rem;">
+            <div style="margin-bottom: 1.25rem;">
+                <label for="csvFileInput" class="form-label">Select CSV File (.csv):</label>
+                <input type="file" id="csvFileInput" name="file" accept=".csv" required class="form-control" style="padding: 0.5rem;">
+                <div class="form-text">
+                    Validation requirements: Standard comma-separated format, minimum 3 data rows, and at least one numeric feature column.
+                </div>
+            </div>
+
+            <div style="background-color: var(--bg-mint); border: 1px solid var(--border-pastel); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.8rem; color: var(--color-forest); margin-bottom: 1.5rem;">
+                <strong>Vercel &amp; Cloud Safety Notice:</strong> The file is read and parsed strictly in transient memory. No files are committed to persistent server disk.
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('uploadCsvModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary">Parse &amp; Analyze Dataset &rarr;</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function switchInteractiveTab(engine) {
+    var plotlyTab = document.getElementById('plotlyTabContainer');
+    var bokehTab = document.getElementById('bokehTabContainer');
+    var plotlyBtn = document.getElementById('tabPlotlyBtn');
+    var bokehBtn = document.getElementById('tabBokehBtn');
+
+    if (engine === 'plotly') {
+        plotlyTab.style.display = 'block';
+        bokehTab.style.display = 'none';
+        plotlyBtn.style.borderBottom = '2px solid var(--color-forest)';
+        plotlyBtn.style.fontWeight = '700';
+        bokehBtn.style.borderBottom = '2px solid transparent';
+        bokehBtn.style.fontWeight = '500';
+    } else {
+        plotlyTab.style.display = 'none';
+        bokehTab.style.display = 'block';
+        bokehBtn.style.borderBottom = '2px solid var(--color-forest)';
+        bokehBtn.style.fontWeight = '700';
+        plotlyBtn.style.borderBottom = '2px solid transparent';
+        plotlyBtn.style.fontWeight = '500';
+    }
+}
+</script>
+{% endblock %}

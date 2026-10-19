@@ -42,6 +42,7 @@ import analysis as analysis_module
 import visualization as viz_module
 import recommendations as rec_module
 import report_generator
+from eda import eda_bp
 
 
 def create_app(config_name=None):
@@ -73,6 +74,7 @@ def create_app(config_name=None):
 
     # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(eda_bp)
 
     # ---------------------------------------------------------------------
     # Global Context Processor & Template Helpers

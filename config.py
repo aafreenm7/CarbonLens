@@ -25,12 +25,20 @@ class Config:
     )
 
     # Database: Default to local SQLite, easily switchable to PostgreSQL via DATABASE_URL
-    _default_db = RUNTIME_DIR / "instance" / "carbonlens.db"
-    _db_url = os.environ.get("DATABASE_URL", f"sqlite:///{_default_db}")
+    _default_db = (RUNTIME_DIR / "instance" / "carbonlens.db").resolve()
+    _raw_db = os.environ.get("DATABASE_URL", f"sqlite:///{_default_db.as_posix()}")
     # Compatibility fix for Supabase / Heroku postgres:// prefix
-    if _db_url.startswith("postgres://"):
-        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
-    SQLALCHEMY_DATABASE_URI = _db_url
+    if _raw_db.startswith("postgres://"):
+        _raw_db = _raw_db.replace("postgres://", "postgresql://", 1)
+    elif _raw_db.startswith("sqlite:///") and not _raw_db.startswith("sqlite:///:memory:"):
+        raw_path = _raw_db[len("sqlite:///"):]
+        p = Path(raw_path)
+        if not p.is_absolute():
+            if raw_path.startswith("instance/") or raw_path.startswith("instance\\"):
+                raw_path = raw_path[len("instance/"):]
+            resolved_file = (RUNTIME_DIR / "instance" / raw_path).resolve()
+            _raw_db = f"sqlite:///{resolved_file.as_posix()}"
+    SQLALCHEMY_DATABASE_URI = _raw_db
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Security & Sessions
