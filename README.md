@@ -1,5 +1,6 @@
 # CarbonLens — Digital Carbon Footprint Analytics Platform
-Website Link: https://carbonlens-dezg.onrender.com/ 
+Website Link: [https://carbonlens-dezg.onrender.com/](https://carbonlens-dezg.onrender.com/)
+
 [![Python](https://img.shields.io/badge/Python-3.11+-1b4332.svg)](https://www.python.org/)
 [![Framework](https://img.shields.io/badge/Flask-3.0+-2d6a4f.svg)](https://flask.palletsprojects.com/)
 [![DataScience](https://img.shields.io/badge/Pandas%20%7C%20NumPy-Enabled-52b788.svg)](https://pandas.pydata.org/)
